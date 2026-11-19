@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Robotic Inspection Client</title>
+    <link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+<div class="page">
+    <div class="topbar">
+        <div class="title">Robotic Inspection Client</div>
+        <div class="ver">V1.0</div>
+    </div>
+
+    <div class="center">
+        <button class="login-btn" id="loginBtn">Log In</button>
+
+        <div class="form">
+            <div class="row">
+                <label>Username</label>
+                <input id="username" type="text" placeholder="Enter username" value="110kV Robot" />
+            </div>
+
+            <div class="row">
+                <label>Password</label>
+                <input id="password" type="password" placeholder="Enter password" />
+            </div>
+
+            <div class="row remember">
+                <span></span>
+                <label class="checkbox">
+                    <input id="remember" type="checkbox" />
+                    <span>Remember password</span>
+                </label>
+            </div>
+
+            <div class="hint" id="hint"></div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/login.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <title>Robotic Inspection Platform</title>
+    <link rel="stylesheet" href="/css/home.css?v=20261118-english-quadruped" />
+</head>
+
+<body>
+    <div class="home-page">
+        <header class="cyber-header">
+            <div class="header-side left-side">
+
+
+                <nav class="cyber-nav nav-left-wing">
+                    <div class="nav-item active" id="btnRobotNav">
+                        <div class="nav-content">
+                            <span class="nav-icon nav-icon-line" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" focusable="false">
+                                    <rect x="2.75" y="3.5" width="14.5" height="10.5" rx="1.5"></rect>
+                                    <path d="M7 17h6M10 14v3"></path>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Robot Control & Navigation</span>
+                        </div>
+                        <div class="active-glow-bar"></div>
+                    </div>
+
+                    <div class="nav-item" id="btnPathFault">
+                        <div class="nav-content">
+                            <span class="nav-icon nav-icon-line" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" focusable="false">
+                                    <path d="M10 18s5.5-5.1 5.5-10A5.5 5.5 0 0 0 4.5 8c0 4.9 5.5 10 5.5 10Z"></path>
+                                    <circle cx="10" cy="8" r="2"></circle>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Path Search & Fault Points</span>
+                        </div>
+                        <div class="active-glow-bar"></div>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="header-center">
+                <div class="center-title-wrapper">
+                    <div class="title-bg-glow"></div>
+                    <h1 class="center-title-text">Robotic Inspection Platform</h1>
+                </div>
+            </div>
+
+            <div class="header-side right-side">
+                <nav class="cyber-nav nav-right-wing">
+                    <div class="nav-item" id="btn3DReconstruct">
+                        <div class="nav-content">
+                            <span class="nav-icon">🌐</span>
+                            <span class="nav-text">3D Reconstruction</span>
+                        </div>
+                        <div class="active-glow-bar"></div>
+                    </div>
+                    <div class="nav-item" id="btnInspectResult">
+                        <div class="nav-content">
+                            <span class="nav-icon">🔗</span>
+                            <span class="nav-text">Inspection Results</span>
+                        </div>
+                        <div class="active-glow-bar"></div>
+                    </div>
+                </nav>
+                <div class="system-message-wrapper" id="systemMessageWrapper">
+                    <div id="systemMessageToast" class="system-message-toast" role="status" aria-live="polite"></div>
+                    <button id="btnSystemMessages" class="system-message-btn" type="button" title="System Messages">
+                        <span class="system-message-icon">🔔</span>
+                        <span id="systemMessageBadge" class="system-message-badge hidden">0</span>
+                    </button>
+                    <div id="systemMessagePanel" class="system-message-panel hidden">
+                        <div class="system-message-panel-title">System Messages</div>
+                        <div id="systemMessageList" class="system-message-list">
+                            <div class="system-message-empty">No system messages</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="layout">
+            <aside class="left-panel">
+
+                <section class="panel panel-info">
+                    <div class="panel-header">Info Panel</div>
+                    <div class="panel-body" id="infoArea">
+                        <div class="info-list">
+
+                            <div class="info-item">
+                                <span class="info-label">Connection:</span>
+                                <span id="robotConnectionBadge" class="status-badge offline">Offline</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Run Status:</span>
+                                <span id="currentModeLabel" class="info-value">Unknown</span>
+                            </div>
+
+                            <div class="info-item">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span class="info-label">Speed:</span>
+
+                                    <button id="btnSpeedSettings" class="action-btn-small"
+                                        style="background: transparent; border: 1px solid #00ccff; padding: 2px 6px; font-size: 12px; color: #00ccff; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                        ⚙️ ▼
+                                    </button>
+                                </div>
+
+                                <span id="infoForwardSpeedValue" class="info-value"
+                                    style="font-weight: bold; color: #00ff00;">2.0 m/s</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Est. Remaining Distance:</span>
+                                <span id="remainMileValue" class="info-value"
+                                    style="font-weight: bold; color: #00e5ff;">-- km</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Battery:</span>
+                                <div style="display: flex; gap: 20px; align-items: center;">
+                                    <span id="batteryLeftValue" class="info-value" style="font-weight: bold;">--
+                                        %</span>
+                                    <span id="batteryRightValue" class="info-value" style="font-weight: bold;">--
+                                        %</span>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Pipeline Sensor:</span>
+                                <span id="pipelineSensorBadge" class="status-badge offline" role="status"
+                                    aria-live="polite">Offline</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Acoustic/EM Sensor:</span>
+                                <span id="acousticMagneticSensorBadge" class="status-badge offline" role="status"
+                                    aria-live="polite">Offline</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Front Light:</span>
+                                <button id="lightFrontButton" class="light-control-btn unknown" type="button"
+                                    disabled>Unknown</button>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">Rear Light:</span>
+                                <button id="lightBackButton" class="light-control-btn unknown" type="button"
+                                    disabled>Unknown</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel panel-op">
+                    <div class="panel-header">Motion Control</div>
+                    <div class="panel-body" id="operationArea">
+
+                        <div class="side-control-pad fill-area" style="flex-direction: column; gap: 10px;">
+                            <div class="joystick-base" id="dogTransBase"
+                                style="position: relative; width: 130px; height: 130px; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); touch-action: none;">
+                                <div class="joystick-stick" id="dogTransStick"
+                                    style="position: absolute; width: 44px; height: 44px; top: 43px; left: 43px; background: radial-gradient(circle, #00ccff, #005588);">
+                                </div>
+                            </div>
+
+                            <div class="joystick-status" id="dogTransStatus" style="font-size: 11px; margin-top: 5px;">
+                                Waiting...</div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <div class="global-operation-log" id="globalOperationLog">
+                    <div class="global-operation-log-title">Operation Log</div>
+                    <div class="global-operation-log-text" id="operationStatusText" title="Waiting...">Waiting...</div>
+                </div>
+
+            </aside>
+
+            <main class="main-area" id="mainArea">
+
+                <div id="gprPanel" class="gpr-panel hidden">
+                    <div class="gpr-controls">
+                        <label for="folderPathInput">Data Path:</label>
+                        <input type="text" id="folderPathInput"
+                            placeholder="e.g.: /mnt/e/Software/IdeaProjects/demo3/data" />
+
+                        <label for="segmentSelect">Profile:</label>
+                        <select id="segmentSelect" disabled>
+                            <option value="">Not loaded</option>
+                        </select>
+
+                        <button id="btnStartGpr">Start Processing</button>
+                        <button id="btnToggleMigration" class="action-btn-small" aria-pressed="false"
+                            title="Controls speed search and Stolt F-K migration for the next GPR run. Off by default.">Migration: OFF</button>
+                        <button id="btnToggleAnnotation" class="action-btn-small" aria-pressed="false"
+                            title="Hide the 3D profile and show connected pipes only">Annotations: OFF</button>
+                        <button id="btnToggleSlices" class="action-btn-small">2D Profile: OFF</button>
+
+                        <input type="file" id="pcdLocalFileInput" accept=".pcd,.json" multiple style="display: none;" />
+                        <button id="btnLoadLocalPcd" class="action-btn-small btn-pcd"
+                            title="Select the local .pcd point cloud and matching .geo.json GPS metadata">Local Map</button>
+                        <button id="btnClearGprPointCloudMap" class="action-btn-small btn-clear-pcd"
+                            title="Clear the loaded point cloud, cable path, and fault markers">Clear Map</button>
+                    </div>
+
+                    <div class="gpr-views hide-2d">
+                        <div class="gpr-view gpr-view-2d">
+                            <h3>Raw 2D Profile</h3>
+                            <canvas id="raw2dCanvas"></canvas>
+                        </div>
+                        <div class="gpr-view gpr-view-2d" id="mig2dView" hidden>
+                            <div class="gpr-view-header">
+                                <h3 id="mig2dTitle">Migrated 2D Profile</h3>
+                                <button id="btnManualMigAnnotation" hidden
+                                    class="action-btn-small manual-anno-btn">Annotate</button>
+                                <button id="btnForcedPipeAnnotation" hidden
+                                    class="action-btn-small manual-pipe-btn">Classify</button>
+                                <button id="btnClearGprAnnotationCalibration" hidden
+                                    class="action-btn-small calibration-clear-btn"
+                                    title="Delete the current GPR annotation calibration file and restore automatic labels">Clear Calibration</button>
+                            </div>
+                            <canvas id="mig2dCanvas"></canvas>
+                        </div>
+                        <div class="gpr-view gpr-view-3d">
+                            <h3>3D View (Raw Scale + RTK Calibration)</h3>
+                            <div id="threeContainer"></div>
+
+                            <div id="gprPipeInfoPopup" class="gpr-pipe-info-popup" style="display: none;">
+                                <div class="gpr-pipe-popup-close"
+                                    onclick="document.getElementById('gprPipeInfoPopup').style.display='none'">×</div>
+                                <div class="gpr-pipe-popup-title-row">
+                                    <div id="gprPipePopupTitle" class="gpr-pipe-popup-title">🟡 Underground Pipe Point</div>
+                                    <button type="button" id="gprPipeColorToggleBtn"
+                                        class="pipe-color-toggle-btn">▼</button>
+                                </div>
+                                <div class="gpr-pipe-popup-item"><strong>GPS:</strong><span id="gprPipePopupGps"
+                                        class="hl-text">--</span></div>
+                                <div class="gpr-pipe-popup-item"><strong>Depth:</strong><span id="gprPipePopupDepth"
+                                        class="hl-text">--</span></div>
+                                <div id="gprPipeColorSection" class="gpr-pipe-color-section">
+                                    <div class="gpr-pipe-color-actions collapsed">
+                                        <button type="button" data-gpr-pipe-material="cable"
+                                            class="pipe-color-btn pipe-color-cable"><span
+                                                class="pipe-color-dot"></span>Underground Cable</button>
+                                        <button type="button" data-gpr-pipe-material="pvc"
+                                            class="pipe-color-btn pipe-color-pvc"><span
+                                                class="pipe-color-dot"></span>PVC Pipe</button>
+                                        <button type="button" data-gpr-pipe-material="metal"
+                                            class="pipe-color-btn pipe-color-metal"><span
+                                                class="pipe-color-dot"></span>Metal Pipe</button>
+                                        <button type="button" data-gpr-pipe-material-reset="1"
+                                            class="pipe-color-btn pipe-color-reset">Reset</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="btnToggleGrid" class="cyber-floating-btn">
+                                <span class="btn-icon">📏</span>
+                                <span class="btn-tooltip">Toggle Grid</span>
+                            </div>
+
+                            <div class="crawler-control-stack">
+                                <button id="btnLoadCurrentPointCloudMap" class="action-btn-small crawler-action-btn">
+                                    🗺️ Load Point Cloud
+                                </button>
+
+                                <div id="carJoystickPanel" class="floating-joystick">
+                                    <button id="btnSendFaultToCar" class="action-btn-small crawler-action-btn">
+                                        📍 Send Fault Point
+                                    </button>
+
+                                    <button id="btnManualScanArea"
+                                        class="action-btn-small crawler-action-btn manual-scan-btn"
+                                        title="Set scan center and direction in the 3D view">
+                                        🧭 Set Scan Area
+                                    </button>
+
+                                    <div class="joystick-title">🚀 Crawler Control</div>
+                                    <div class="joystick-base" id="carJoystickBase">
+                                        <div class="joystick-stick" id="carJoystickStick"></div>
+                                    </div>
+                                    <div class="joystick-status" id="carJoystickStatus">Stop</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="robotNavPanel" class="robot-panel hidden">
+                    <div class="robot-left-col">
+
+                        <div class="nav-display-area video-container">
+
+                            <div class="video-box">
+                                <span class="video-label-overlay label-front" data-camera-label="front">
+                                    ● Front View
+                                </span>
+                                <div class="robot-camera-slot" data-camera-slot="front"></div>
+                            </div>
+
+                            <div class="video-box">
+                                <span class="video-label-overlay label-rear" data-camera-label="back">
+                                    ● Rear View
+                                </span>
+                                <div class="robot-camera-slot" data-camera-slot="back"></div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                    <div class="robot-right-col">
+
+                        <div class="control-group-box" style="flex: 1.5; display: flex; flex-direction: column;">
+                            <div class="group-title">🎥 Arm End View</div>
+
+                            <div class="camera-stream-container"
+                                style="flex: 1; display: flex; justify-content: center; align-items: center; background: #000000; border-radius: 4px; overflow: hidden; position: relative;">
+
+                                <img id="armEndCameraStream" src="" alt="Camera Stream"
+                                    style="width: 100%; height: 100%; object-fit: contain; display: none;" />
+
+                                <div id="armEndCameraPlaceholder" class="placeholder-text-small"
+                                    style="text-align: center; color: rgba(135, 200, 255, 0.4);">
+                                    <span style="font-size: 24px; display: block; margin-bottom: 8px;">📡</span>
+                                    Arm stream offline<br>
+                                    <span
+                                        style="font-size: 11px; color: rgba(135, 200, 255, 0.25); font-family: monospace;"></span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="control-group-box joints-group"
+                            style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div class="group-title" style="width: 100%; margin-bottom: 15px;">Steering Control</div>
+
+                            <div class="joystick-base dog-rot-joystick-base" id="dogRotBase">
+                                <div class="joystick-stick dog-rot-joystick-stick" id="dogRotStick">
+                                </div>
+                            </div>
+
+                            <div class="joystick-status" id="dogRotStatus" style="font-size: 11px; margin-top: 10px;">
+                                Waiting...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pathFaultPanel" class="path-fault-panel hidden">
+                    <div class="pf-col pf-side">
+                        <div class="pf-header">Signal Monitor (Acoustic/EM)</div>
+
+                        <div class="pf-body" id="signalDataArea">
+                            <canvas id="signalCanvas"></canvas>
+                            <div id="signalStatus">WAITING...</div>
+
+                            <div class="floating-threshold-box">
+                                <span class="threshold-label">EM Threshold:</span>
+                                <button class="joint-btn minus mini-btn-spec"
+                                    onclick="adjustAucParam('PULSE', -20)">-</button>
+                                <span id="disp_pulse_threshold" class="threshold-val">1200</span>
+                                <button class="joint-btn plus mini-btn-spec"
+                                    onclick="adjustAucParam('PULSE', 20)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pf-col pf-center">
+                        <!-- Top Part: Map (75%) -->
+                        <div class="pf-map-wrapper">
+                            <div class="pf-header pf-header-flex">
+                                <span>Route Planning & Position Map</span>
+
+                                <div class="header-btn-group">
+                                    <button id="btnStartPointCloudLidar" class="header-btn-mini lidar-start-btn"
+                                        title="Send the start command to LiDAR">
+                                        Start LiDAR
+                                    </button>
+
+                                    <button id="btnStopPointCloudLidar" class="header-btn-mini lidar-stop-btn"
+                                        title="Send the stop command to LiDAR">
+                                        Stop LiDAR
+                                    </button>
+
+                                    <button id="btnTogglePointCloudScan" class="header-btn-mini"
+                                        title="Pause point cloud drawing and keep the current map frozen">
+                                        Pause Scan
+                                    </button>
+
+                                    <div class="dropdown-group">
+                                        <button class="header-btn-mini dropdown-toggle" type="button">
+                                            🛠 Tools ▼
+                                        </button>
+                                        <div class="dropdown-content">
+                                            <button id="btnManualDrawCable" class="dropdown-item" type="button">
+                                                📍 Draw Cable
+                                            </button>
+                                            <button id="btnTrackCableOverlay" class="dropdown-item cable-track-btn"
+                                                type="button" title="Start tracking the current cable path">
+                                                ⚡ Track Cable
+                                            </button>
+                                            <input type="file" id="kmlFileInput" accept=".kml" style="display: none;" />
+                                            <button id="btnLoadKml" class="dropdown-item" type="button">
+                                                📂 Load KML Route
+                                            </button>
+                                            <button id="btnSavePcd" class="dropdown-item" type="button"
+                                                title="Save the PCD point cloud with matching .geo.json GPS metadata">
+                                                💾 Save Point Cloud
+                                            </button>
+                                            <button id="btnFaultWaitSettings" class="dropdown-item" type="button"
+                                                title="Set the wait time after each stop during automatic fault search">
+                                                ⚙ Settings
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="dropdown-group">
+                                        <button class="header-btn-mini dropdown-toggle">
+                                            Clear Data ▼
+                                        </button>
+                                        <div class="dropdown-content">
+                                            <button id="btnClearCloud" class="dropdown-item">Clear Point Cloud</button>
+                                            <button id="btnClearFaults" class="dropdown-item">Clear Faults</button>
+                                            <button id="btnClearDogPath" class="dropdown-item">Clear Robot Path</button>
+                                            <button id="btnClearCablePath" class="dropdown-item">Clear Cable Path</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pf-body map-container" id="pathMapArea"
+                                style="position: relative; overflow: hidden; background: #111;">
+
+                                <div id="cableInfoPopup" class="cable-info-popup" style="display: none;">
+                                    <div class="popup-close"
+                                        onclick="document.getElementById('cableInfoPopup').style.display='none'">×
+                                    </div>
+                                    <div class="popup-title">📌 Cable Point</div>
+                                    <div class="popup-item"><strong>Distance:</strong> <span id="popupDist"
+                                            class="hl-text">--</span> m</div>
+                                    <div class="popup-item"><strong>Est. Depth:</strong> <span id="popupDepth"
+                                            class="hl-text">Pending</span></div>
+                                    <div class="popup-item"><strong>GPS:</strong> <span id="popupGps"
+                                            class="hl-text">--</span>
+                                    </div>
+                                </div>
+
+                                <div class="map-nav-overlay">
+
+                                    <div id="navInfoPanel" class="nav-info-box" style="display: none;">
+                                        <div>Target Distance: <span id="navDistVal"
+                                                style="color: #00ff00; font-weight: bold;">0.00</span>
+                                            m</div>
+                                        <div style="margin-top: 4px; font-size: 11px; color: #aaa;">
+                                            Mean Error: <span id="navErrorVal" style="color: #00e5ff;">--</span> m
+                                        </div>
+                                    </div>
+
+                                    <button id="btnSetNavPoint" class="nav-overlay-btn" title="Click to select a point on the map">
+                                        📍 Select Point
+                                    </button>
+                                    <button id="btnStartNav" class="nav-overlay-btn success" title="Start navigating to the target">
+                                        ▶ Navigate
+                                    </button>
+                                    <button id="btnClearNav" class="nav-overlay-btn danger" title="Clear Mark">
+                                        ✖ Clear
+                                    </button>
+                                </div>
+                                <button id="btnCameraFollow" class="camera-follow-toggle" type="button"
+                                    aria-pressed="false" title="Follow the robot with the camera">
+                                    ◎ Follow View
+                                </button>
+                                <div id="realtimeGpsOverlay" class="realtime-gps-overlay">
+                                    🛰️ RTK: <span id="realtimeGpsText">Waiting for GPS...</span>
+                                </div>
+                                <button id="btnSaveInspectionResult" class="inspection-save-fab">
+                                    💾 Save Inspection
+                                </button>
+                                <div class="floating-compass">
+                                    <div class="compass-container">
+                                        <div id="arrowRight" class="arrow-icon side-arrow">▶</div>
+                                        <div class="cable-assembly">
+                                            <div class="cable-up-arrow">▲</div>
+                                            <div class="cable-thick-line"></div>
+                                        </div>
+                                        <div id="arrowLeft" class="arrow-icon side-arrow">◀</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="pf-col pf-side">
+                        <div class="pf-header">Front/Rear Views & Snapshots</div>
+                        <div class="pf-body" id="pipelineDataArea">
+
+                            <div class="pf-video-vertical">
+                                <div class="video-box">
+                                    <span class="video-label-overlay label-front" data-camera-label="front">●
+                                        Front View</span>
+                                    <div class="robot-camera-slot" data-camera-slot="front"></div>
+                                </div>
+                                <div class="video-box">
+                                    <span class="video-label-overlay label-rear" data-camera-label="back">● Rear View</span>
+                                    <div class="robot-camera-slot" data-camera-slot="back"></div>
+                                </div>
+                            </div>
+
+                            <div class="pipeline-upper">
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 4px; flex-shrink: 0; width: 100%;">
+                                    <button onclick="captureFaultLeftSequence()"
+                                        class="simple-capture-btn">📸Left</button>
+                                    <button onclick="captureFaultSequence()" class="simple-capture-btn">📸Right</button>
+                                    <button onclick="captureFaultFrontSequence()"
+                                        class="simple-capture-btn">📸Front</button>
+                                    <button onclick="captureFaultBackSequence()"
+                                        class="simple-capture-btn">📸Rear</button>
+
+                                </div>
+                                <button id="btnShowCaptureModal" class="simple-capture-btn"
+                                    style="width: 100%; margin-bottom: 2px; flex-shrink: 0; padding: 6px 0; font-size: 12px; letter-spacing: 1px;">
+                                    👁️ View Snapshots
+                                </button>
+
+
+                            </div>
+                        </div>
+
+                        <div class="pf-header steering-header">Steering Control (L/R)</div>
+                        <div class="pf-body" id="steeringControlArea">
+                            <div class="control-group-box joints-group"
+                                style="width: 100%; border: none; background: transparent; padding: 0;">
+                                <div class="joystick-base dog-rot-joystick-base compact" id="dogRotBase2">
+                                    <div class="joystick-stick dog-rot-joystick-stick compact" id="dogRotStick2">
+                                    </div>
+                                </div>
+                                <div class="joystick-status" id="dogRotStatus2"
+                                    style="font-size: 11px; margin-top: 10px; text-align: center;">Waiting...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="inspectResultPanel" class="inspect-result-panel hidden">
+                    <div class="inspect-result-toolbar">
+                        <div class="inspect-result-heading">Inspection Results</div>
+                        <button id="btnRefreshInspectionResults" class="inspect-refresh-btn" type="button">Refresh</button>
+                    </div>
+
+                    <div class="inspect-result-table-wrap">
+                        <table class="inspect-result-table">
+                            <thead>
+                                <tr>
+                                    <th>Result Name</th>
+                                    <th>Saved At</th>
+                                    <th>Length</th>
+                                    <th>Faults</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inspectResultTableBody">
+                                <tr>
+                                    <td colspan="4" class="inspect-result-empty">No saved records</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
+        <div class="bottom-actions">
+            <div class="bottom-mode-group">
+                <button id="btnDogStand" class="tech-mode-btn">
+                    <span class="btn-icon"></span> Quadruped Robot Stand
+                </button>
+
+                <button id="btnAutoTrack" class="tech-mode-btn">
+                    <span class="btn-icon">📡</span> Start Auto Track
+                </button>
+
+                <button id="btnFindFaultOverlay" class="tech-mode-btn">
+                    <span class="btn-icon">🔍</span> Find Faults
+                </button>
+
+                <button id="btnShowPipelineKeyModal" class="tech-mode-btn"
+                    style="background: linear-gradient(180deg, rgba(16, 60, 110, 0.85) 0%, rgba(6, 28, 55, 0.95) 100%);">
+                    <span class="btn-icon"></span> Pipeline Locator
+                </button>
+
+                <button id="btnShowArmModal" class="tech-mode-btn"
+                    style="background: linear-gradient(180deg, rgba(16, 60, 110, 0.85) 0%, rgba(6, 28, 55, 0.95) 100%);">
+                    <span class="btn-icon"></span> Arm Control
+                </button>
+            </div>
+
+            <button class="emergency-btn" id="btnEmergencyStop">Emergency Stop (STOP)</button>
+        </div>
+
+        <div id="speedSettingsPopup" class="speed-popup hidden">
+            <div class="popup-header">
+                <span>⚙️ Motion & Tracking Speed</span>
+                <button id="btnCloseSpeedPopup" class="popup-close-btn">×</button>
+            </div>
+            <div class="popup-content">
+                <div class="speed-group-fill">
+                    <div class="speed-header">🎮 Robot Motion Speed (m/s)</div>
+                    <div class="slider-row">
+                        <span class="slider-label">Forward:</span>
+                        <div class="slider-wrapper">
+                            <span id="valManX" class="floating-tooltip">2.0</span>
+                            <input type="range" id="manualSpeedX" class="custom-range" min="0" max="3.0" step="0.2"
+                                value="2.0" oninput="updateFloatingThumb(this, 'valManX')">
+                        </div>
+                        <span class="val-max">3.0</span>
+                    </div>
+                    <div class="slider-row">
+                        <span class="slider-label">Lateral:</span>
+                        <div class="slider-wrapper">
+                            <span id="valManY" class="floating-tooltip">0.5</span>
+                            <input type="range" id="manualSpeedY" class="custom-range" min="0" max="3.0" step="0.2"
+                                value="0.5" oninput="updateFloatingThumb(this, 'valManY')">
+                        </div>
+                        <span class="val-max">3.0</span>
+                    </div>
+                </div>
+
+                <div class="speed-group-fill">
+                    <div class="speed-header">📡 Auto Track Speed (m/s)</div>
+                    <div class="slider-row">
+                        <span class="slider-label">Forward:</span>
+                        <div class="slider-wrapper">
+                            <span id="valAutoX" class="floating-tooltip">0.2</span>
+                            <input type="range" id="autoSpeedX" class="custom-range" min="0" max="3.0" step="0.1"
+                                value="0.3" oninput="updateFloatingThumb(this, 'valAutoX')"
+                                onchange="updateAutoSpeed()">
+                        </div>
+                        <span class="val-max">3.0</span>
+                    </div>
+                    <div class="slider-row">
+                        <span class="slider-label">Turn:</span>
+                        <div class="slider-wrapper">
+                            <span id="valAutoY" class="floating-tooltip">0.4</span>
+                            <input type="range" id="autoSpeedY" class="custom-range" min="0" max="3.0" step="0.1"
+                                value="0.4" oninput="updateFloatingThumb(this, 'valAutoY')"
+                                onchange="updateAutoSpeed()">
+                        </div>
+                        <span class="val-max">3.0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="armControlModal" class="cyber-modal-overlay">
+        <div class="cyber-modal-content">
+            <div class="cyber-modal-header">
+                <h3>🦾 Arm Control Center</h3>
+                <span class="close-modal-btn" id="closeArmModal">&times;</span>
+            </div>
+
+            <div class="arm-modal-body">
+                <div class="nc-left-speed">
+                    <div class="control-group-box" style="margin: 0; justify-content: space-around;">
+                        <div class="group-title">Arm Pose & Gripper</div>
+
+                        <div class="cartesian-grid">
+                            <div class="cart-col">
+                                <button class="cart-btn z-btn" onmousedown="startCartesianJog(2, 1, event)"
+                                    onmouseup="stopCartesianJog()" onmouseleave="stopCartesianJog()"
+                                    ontouchstart="startCartesianJog(2, 1, event)"
+                                    ontouchend="stopCartesianJog()">⬆<br>Up</button>
+                                <div class="axis-label">Height</div>
+                                <button class="cart-btn z-btn" onmousedown="startCartesianJog(2, -1, event)"
+                                    onmouseup="stopCartesianJog()" onmouseleave="stopCartesianJog()"
+                                    ontouchstart="startCartesianJog(2, -1, event)"
+                                    ontouchend="stopCartesianJog()">⬇<br>Down</button>
+                            </div>
+
+                            <div class="cart-dpad">
+                                <div class="dpad-row">
+                                    <button class="cart-btn" onmousedown="startCartesianJog(0, 1, event)"
+                                        onmouseup="stopCartesianJog()" onmouseleave="stopCartesianJog()"
+                                        ontouchstart="startCartesianJog(0, 1, event)"
+                                        ontouchend="stopCartesianJog()">Front</button>
+                                </div>
+                                <div class="dpad-row">
+                                    <button class="cart-btn" onmousedown="startCartesianJog(1, 1, event)"
+                                        onmouseup="stopCartesianJog()" onmouseleave="stopCartesianJog()"
+                                        ontouchstart="startCartesianJog(1, 1, event)"
+                                        ontouchend="stopCartesianJog()">Left</button>
+                                    <div class="dpad-center"></div>
+                                    <button class="cart-btn" onmousedown="startCartesianJog(1, -1, event)"
+                                        onmouseup="stopCartesianJog()" onmouseleave="stopCartesianJog()"
+                                        ontouchstart="startCartesianJog(1, -1, event)"
+                                        ontouchend="stopCartesianJog()">Right</button>
+                                </div>
+                                <div class="dpad-row">
+                                    <button class="cart-btn" onmousedown="startCartesianJog(0, -1, event)"
+                                        onmouseup="stopCartesianJog()" onmouseleave="stopCartesianJog()"
+                                        ontouchstart="startCartesianJog(0, -1, event)"
+                                        ontouchend="stopCartesianJog()">Back</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="height: 1px; background: rgba(135,200,255,0.2); margin: 8px 0;"></div>
+
+                        <div class="integrated-gripper-box">
+                            <div class="gripper-header">
+                                <span class="axis-label" style="font-weight: bold; color: #87c8ff;">Gripper
+                                    (0-100mm)</span>
+                                <span class="j-val" id="disp_gripper"
+                                    style="color: #00ff00; font-family: monospace; font-size: 14px;">0.0
+                                    mm</span>
+                            </div>
+                            <div class="gripper-controls">
+                                <button class="joint-btn minus" onmousedown="startGripperJog(-1)"
+                                    onmouseup="stopGripperJog()" onmouseleave="stopGripperJog()"
+                                    ontouchstart="startGripperJog(-1)" ontouchend="stopGripperJog()"
+                                    style="flex: 1; height: 32px; margin: 0;">Close</button>
+                                <input type="range" id="gripperSlider" class="custom-range" min="0" max="100" step="1"
+                                    value="0" oninput="updateGripperLabel(this.value)"
+                                    onchange="setGripperValue(this.value)" style="flex: 3; margin: 0 8px;">
+                                <button class="joint-btn plus" onmousedown="startGripperJog(1)"
+                                    onmouseup="stopGripperJog()" onmouseleave="stopGripperJog()"
+                                    ontouchstart="startGripperJog(1)" ontouchend="stopGripperJog()"
+                                    style="flex: 1; height: 32px; margin: 0;">Open</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nc-right-arm-video" id="armDataDisplay">
+                    <div class="arm-data-container">
+                        <div class="arm-data-header">
+                            <span class="pulse-dot">●</span> Arm Pose & Joints (°)
+                        </div>
+
+                        <div class="arm-integrated-wrapper">
+
+                            <div class="arm-joints-grid integrated-grid">
+
+                                <div class="joint-box integrated-box">
+                                    <span class="j-label">J1 Base</span>
+                                    <div class="j-ctrl-row">
+                                        <button class="joint-btn minus" onmousedown="startArmJog(0, -1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(0, -1, event)"
+                                            ontouchend="stopArmJog()">-</button>
+                                        <span class="j-val" id="disp_j1">--</span>
+                                        <button class="joint-btn plus" onmousedown="startArmJog(0, 1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(0, 1, event)" ontouchend="stopArmJog()">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="joint-box integrated-box">
+                                    <span class="j-label">J2 Upper Arm</span>
+                                    <div class="j-ctrl-row">
+                                        <button class="joint-btn minus" onmousedown="startArmJog(1, -1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(1, -1, event)"
+                                            ontouchend="stopArmJog()">-</button>
+                                        <span class="j-val" id="disp_j2">--</span>
+                                        <button class="joint-btn plus" onmousedown="startArmJog(1, 1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(1, 1, event)" ontouchend="stopArmJog()">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="joint-box integrated-box">
+                                    <span class="j-label">J3 Forearm</span>
+                                    <div class="j-ctrl-row">
+                                        <button class="joint-btn minus" onmousedown="startArmJog(2, -1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(2, -1, event)"
+                                            ontouchend="stopArmJog()">-</button>
+                                        <span class="j-val" id="disp_j3">--</span>
+                                        <button class="joint-btn plus" onmousedown="startArmJog(2, 1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(2, 1, event)" ontouchend="stopArmJog()">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="joint-box integrated-box">
+                                    <span class="j-label">J4 Wrist Roll</span>
+                                    <div class="j-ctrl-row">
+                                        <button class="joint-btn minus" onmousedown="startArmJog(3, -1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(3, -1, event)"
+                                            ontouchend="stopArmJog()">-</button>
+                                        <span class="j-val" id="disp_j4">--</span>
+                                        <button class="joint-btn plus" onmousedown="startArmJog(3, 1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(3, 1, event)" ontouchend="stopArmJog()">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="joint-box integrated-box">
+                                    <span class="j-label">J5 Wrist Pitch</span>
+                                    <div class="j-ctrl-row">
+                                        <button class="joint-btn minus" onmousedown="startArmJog(4, -1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(4, -1, event)"
+                                            ontouchend="stopArmJog()">-</button>
+                                        <span class="j-val" id="disp_j5">--</span>
+                                        <button class="joint-btn plus" onmousedown="startArmJog(4, 1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(4, 1, event)" ontouchend="stopArmJog()">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="joint-box integrated-box">
+                                    <span class="j-label">J6 End</span>
+                                    <div class="j-ctrl-row">
+                                        <button class="joint-btn minus" onmousedown="startArmJog(5, -1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(5, -1, event)"
+                                            ontouchend="stopArmJog()">-</button>
+                                        <span class="j-val" id="disp_j6">--</span>
+                                        <button class="joint-btn plus" onmousedown="startArmJog(5, 1, event)"
+                                            onmouseup="stopArmJog()" onmouseleave="stopArmJog()"
+                                            ontouchstart="startArmJog(5, 1, event)" ontouchend="stopArmJog()">+</button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="arm-quick-actions">
+                                <button onclick="moveArmToFrontPress()"
+                                    class="test-sequence-btn capture-btn-left full-w">🎯 Reach Front</button>
+                                <button onclick="moveArmToBackPress()" class="test-sequence-btn capture-btn full-w">🎯
+                                    Reach Back</button>
+                                <button onclick="moveArmToZero()" class="test-sequence-btn full-w">🔄
+                                    Home</button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div id="pipelineKeyModal" class="cyber-modal-overlay">
+        <div class="cyber-modal-content pipeline-key-modal-content">
+            <div class="cyber-modal-header">
+                <h3>Pipeline Locator</h3>
+                <span class="close-modal-btn" id="closePipelineKeyModal">&times;</span>
+            </div>
+            <div class="pipeline-key-modal-body">
+                <div class="control-group-box pipeline-key-control-box">
+                    <div class="group-title">Locator Keys</div>
+                    <div class="pipeline-key-grid">
+                        <button type="button" class="pipeline-key-btn" data-pipeline-key="POWER">
+                            <strong>POWER</strong>
+                            <span>Power</span>
+                        </button>
+                        <button type="button" class="pipeline-key-btn" data-pipeline-key="INFO">
+                            <strong>INFO</strong>
+                            <span>Info</span>
+                        </button>
+                        <button type="button" class="pipeline-key-btn" data-pipeline-key="FREQ">
+                            <strong>FREQ</strong>
+                            <span>Frequency</span>
+                        </button>
+                        <button type="button" class="pipeline-key-btn" data-pipeline-key="MODE">
+                            <strong>MODE</strong>
+                            <span>Mode</span>
+                        </button>
+                    </div>
+                    <div id="pipelineKeyStatus" class="pipeline-key-status">Waiting...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="faultWaitParamModal" class="cyber-modal-overlay scan-param-overlay" style="display: none;">
+        <div class="cyber-modal-content scan-param-content fault-wait-param-content pointer-auto">
+            <div class="cyber-modal-header">
+                <span>⚙ Auto Fault Search Settings</span>
+                <button id="btnFaultWaitParamClose" class="close-btn">×</button>
+            </div>
+            <div class="cyber-modal-body scan-param-body">
+                <div class="scan-param-desc">
+                    Set the wait time after each stop during automatic fault search.
+                </div>
+
+                <label class="scan-param-row">
+                    <span>Wait (s)</span>
+                    <input id="faultWaitSecondsInput" type="number" min="1" max="120" step="1" value="30" />
+                </label>
+
+                <div class="fault-wait-current">
+                    Current:<span id="faultWaitCurrentText">30 s</span>
+                </div>
+
+                <div class="scan-param-actions">
+                    <button id="btnFaultWaitParamCancel" class="scan-param-btn secondary">Cancel</button>
+                    <button id="btnFaultWaitParamConfirm" class="scan-param-btn primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crawler Scan Settings dialog opens after clicking Send Fault Point -->
+    <div id="scanParamModal" class="cyber-modal-overlay scan-param-overlay" style="display: none;">
+        <div class="cyber-modal-content scan-param-content pointer-auto">
+            <div class="cyber-modal-header">
+                <span>🧭 Crawler Scan Settings</span>
+                <button id="btnScanParamClose" class="close-btn">×</button>
+            </div>
+            <div class="cyber-modal-body scan-param-body">
+                <div class="scan-param-desc">
+                    After confirmation, the host creates a rectangular scan area and Z path, then sends GPS waypoints to the crawler. Fault scans use the fault point as the center. Manual scans use a center and direction selected in the 3D view.
+                </div>
+
+                <label class="scan-param-row">
+                    <span>Length L (m)</span>
+                    <input id="scanRectLengthInput" type="number" min="0.2" max="50" step="0.1" value="2.2" />
+                </label>
+
+                <label class="scan-param-row">
+                    <span>Width W (m)</span>
+                    <input id="scanRectWidthInput" type="number" min="0.2" max="20" step="0.1" value="1.2" />
+                </label>
+
+                <label class="scan-param-row">
+                    <span>Z path angle (deg)</span>
+                    <input id="scanZAngleInput" type="number" min="5" max="85" step="1" value="30" />
+                </label>
+
+                <div class="scan-param-actions">
+                    <button id="btnScanParamCancel" class="scan-param-btn secondary">Cancel</button>
+                    <button id="btnScanParamConfirm" class="scan-param-btn primary">Plan & Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="captureImageModal" class="cyber-modal-overlay non-blocking-overlay" style="display: none;">
+        <div class="cyber-modal-content capture-modal-content pointer-auto">
+            <div class="cyber-modal-header">
+                <span>🖼️ Snapshot Images</span>
+                <button id="closeCaptureModal" class="close-btn">×</button>
+            </div>
+            <div class="cyber-modal-body">
+                <div class="capture-grid-2x2">
+                    <div class="capture-img-box">
+                        <div class="img-label">Front Snapshot</div>
+                        <img id="imgCaptureFront" src="/img/placeholder.png" alt="Front" />
+                    </div>
+                    <div class="capture-img-box">
+                        <div class="img-label">Rear Snapshot</div>
+                        <img id="imgCaptureBack" src="/img/placeholder.png" alt="Back" />
+                    </div>
+                    <div class="capture-img-box">
+                        <div class="img-label">Left Snapshot</div>
+                        <img id="imgCaptureLeft" src="/img/placeholder.png" alt="Left" />
+                    </div>
+                    <div class="capture-img-box">
+                        <div class="img-label">Right Snapshot</div>
+                        <img id="imgCaptureRight" src="/img/placeholder.png" alt="Right" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="robot-camera-source-container" aria-hidden="true">
+        <video id="robotCameraSourceFront" muted autoplay playsinline></video>
+        <video id="robotCameraSourceBack" muted autoplay playsinline></video>
+    </div>
+
+    <script src="/js/three.min.js"></script>
+    <script src="/js/GLTFLoader.js"></script>
+    <script src="/js/PCDLoader.js"></script>
+    <script src="/js/sockjs.min.js"></script>
+    <script src="/js/stomp.min.js"></script>
+    <script src="/js/reader.js"></script>
+    <script src="/js/fisheye-webgl.js"></script>
+    <script src="/js/pipeline_depth_min_interpolation.js?v=20261104"></script>
+    <script src="/js/home.js?v=20261118-english-quadruped"></script>
+</body>
+
+</html>

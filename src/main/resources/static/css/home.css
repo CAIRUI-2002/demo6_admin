@@ -1,0 +1,5322 @@
+/* 让页面整体（浏览器窗口）高度撑满，并去掉默认边距 */
+html,
+body {
+    height: 100%;
+    /* 整个页面高度 = 视口高度 */
+    margin: 0;
+    /* 去掉 body 默认外边距 */
+    padding: 0;
+    /* 去掉默认内边距 */
+}
+
+/* 整个主页面容器：放背景图、整体字体颜色等 */
+.home-page {
+    position: relative;
+    /* 让内部 absolute 元素（例如顶部横幅）以它为参照 */
+    height: 100vh;
+    /* 视口高度 100%，刚好一屏 */
+    width: 100%;
+    /* 水平铺满 */
+    background: url("../img/main-bg.png") center/cover no-repeat fixed;
+    /* ↑ 背景图路径；居中(center)；按比例铺满(cover)；不平铺(no-repeat)；固定在视口上(fixed) */
+
+    color: #eaf6ff;
+    /* 页面默认字体颜色（浅蓝白） */
+    font-family: "Microsoft YaHei", system-ui, Arial;
+    /* 默认字体 */
+}
+
+
+.layout {
+    position: relative;
+    height: 100%;
+    display: flex;
+    padding-top: 75px;
+    /* 紧凑贴合上方 64px 高度的导航栏 */
+    padding-bottom: 70px;
+    /* 缩减底部原本 120px 的大留白 */
+    box-sizing: border-box;
+}
+
+/* 左侧整体容器：包括操作栏 + 信息栏 + 系统栏 */
+.left-panel {
+    width: 280px;
+    /* 默认宽度 */
+    flex-shrink: 0;
+    /* 防止被挤压 */
+    height: calc(100vh - 78px);
+    margin-left: 10px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: width 0.3s;
+    /* 添加过渡动画 */
+}
+
+/* 公共面板样式：操作栏与信息栏的外观 */
+.panel {
+    background: rgba(3, 32, 60, 0.78);
+    /* 面板主体背景（半透明深蓝） */
+    border: 1px solid rgba(135, 200, 255, 0.5);
+    /* 边框亮蓝色，提亮轮廓 */
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    /* 外阴影，有浮起感 */
+    display: flex;
+    /* 内部再做上下布局 */
+    flex-direction: column;
+    /* 头部 + 内容 纵向排布 */
+}
+
+/* 操作栏：占高度多一点（1.2 份） */
+.panel-op {
+    flex: 3;
+    /* 在 left-panel 中分得更高的空间 */
+    min-height: 0;
+}
+
+/* 信息栏：占高度略少一点（1 份） */
+.panel-info {
+    flex: 3.5;
+    /* 增加高度份额，以便显示更多行信息 */
+    min-height: 0;
+    /* ✅ 关键：允许 Flex 项目压缩，不被内容撑开 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 面板顶部的标题条（“操作栏”、“信息栏”） */
+.panel-header {
+    flex-shrink: 0;
+    /* ✅ 防止标题被压缩 */
+    height: 32px;
+    /* 标题栏高度 */
+    line-height: 32px;
+    /* 行高 = 高度，实现垂直居中 */
+    padding: 0 10px;
+    /* 左右内边距 */
+    font-size: 16px;
+    /* 标题文字大小 */
+    background: linear-gradient(90deg, #0b4a7c, #3d79ad);
+    /* 渐变蓝背景 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    /* 底部细线，和内容区分隔开 */
+}
+
+/* 面板内容区：真正放信息的地方 */
+.panel-body {
+    flex: 1;
+    /* 占据面板剩余所有高度 */
+    background: rgba(5, 20, 40, 0.6);
+    /* 内部背景，略深一点的半透明蓝 */
+    padding: 8px;
+    /* 内边距，内容不会贴边 */
+    overflow-y: auto;
+    /* ✅ 明确开启垂直滚动条 */
+    min-height: 0;
+    /* ✅ 配合 Flex 布局，允许内部滚动 */
+}
+
+
+/* 右侧主内容区域：预留给地图、视频等 */
+.main-area {
+    flex: 1;
+    /* 在横向布局中占满剩余空间 */
+    margin-left: 5px;
+    /* 与左侧栏间距 */
+    margin-right: 10px;
+    /* 右边与页面边缘的间距 */
+    border-radius: 10px;
+    /* 边角圆润 */
+    border: 1px solid rgba(120, 200, 255, 0.4);
+    /* 边框颜色 */
+    background: rgba(4, 20, 40, 0.5);
+    /* 半透明深蓝背景 */
+}
+
+/* 1. 底部总容器：改为“居中对齐”布局 */
+.bottom-actions {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 15px;
+    height: 48px;
+
+    display: flex;
+    justify-content: center;
+    /* ✅ 核心修改：让内部的按钮组整体在页面水平居中 */
+    align-items: center;
+
+    pointer-events: none;
+}
+
+/* 恢复按钮的点击事件 */
+.bottom-actions>* {
+    pointer-events: auto;
+}
+
+/* ==========================================
+   ✅ 新增：底部横向模式按钮组样式
+   ========================================== */
+/* 2. 模式按钮组：实现“分散”排列 */
+.bottom-mode-group {
+    display: flex;
+    align-items: center;
+    /* ✅ 增加间距：通过较大的 gap 实现“分散”感，建议 40px - 60px */
+    gap: clamp(18px, 2.5vw, 36px);
+    pointer-events: auto;
+}
+
+/* 让底部的模式按钮高度完美对齐右侧 48px 的急停按钮 */
+.bottom-mode-group .tech-mode-btn {
+    width: 160px;
+    height: 48px;
+    margin: 0;
+    font-size: 15px;
+    white-space: nowrap;
+}
+
+/* ==========================================
+   全新科技感顶部导航与标题栏
+   ========================================== */
+.top-header-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(180deg, rgba(3, 25, 50, 0.95) 0%, rgba(3, 20, 40, 0.4) 100%);
+    border-bottom: 1px solid rgba(0, 160, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+/* 左右菜单组外层容器 */
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.header-nav-left {
+    justify-content: flex-start;
+}
+
+.header-nav-right {
+    justify-content: flex-end;
+}
+
+/* 顶部导航按钮样式（科技半透明发光风） */
+.nav-tab-btn {
+    position: relative;
+    height: 40px;
+    padding: 0 16px;
+    background: rgba(4, 30, 60, 0.6);
+    border: 1px solid rgba(0, 160, 255, 0.4);
+    border-radius: 4px;
+    color: #a8e0ff;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+    overflow: hidden;
+    outline: none;
+}
+
+/* 按钮悬停特效：高亮提色伴随内部流光 */
+.nav-tab-btn:hover {
+    color: #ffffff;
+    background: rgba(0, 120, 255, 0.3);
+    border-color: #00e5ff;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.6), inset 0 0 8px rgba(0, 160, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.nav-tab-btn:active {
+    transform: translateY(1px);
+    background: rgba(0, 150, 255, 0.5);
+}
+
+.nav-icon {
+    font-size: 16px;
+}
+
+/* 顶部主导航的简约线性图标：颜色随按钮状态统一变化，避免彩色 Emoji 过于抢眼。 */
+.nav-icon-line {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 18px;
+}
+
+.nav-icon-line svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.nav-item:hover .nav-icon-line,
+.nav-item.active .nav-icon-line {
+    filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.75));
+}
+
+/* 中间纯 CSS 渲染的炫酷大标题容器 */
+.header-title-box {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 0 30px;
+}
+
+/* 模拟金属流光质感文字 */
+.title-text {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    background: linear-gradient(180deg, #ffffff 0%, #a8e0ff 70%, #00ccff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(0, 204, 255, 0.5);
+    z-index: 2;
+}
+
+/* =========================================================
+   全新一体化机甲翼展 Header (参考网格化巡检系统大屏重构)
+   ========================================================= */
+
+/* 1. 顶部栏总容器：打造连贯的通栏科技底座 */
+.cyber-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    background: linear-gradient(180deg, rgba(2, 18, 36, 0.95) 0%, rgba(5, 32, 60, 0.85) 100%);
+    border-bottom: 1px solid #0a4b8c;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 -1px 0 rgba(0, 204, 255, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    z-index: 999;
+    box-sizing: border-box;
+    padding: 0;
+    /* 移除原有默认padding，靠内部伸展对齐 */
+}
+
+/* 2. 左右侧翼容器 */
+.header-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    z-index: 2;
+}
+
+.left-side {
+    justify-content: flex-start;
+    padding-left: 15px;
+    /* 仅给最左侧Logo留白 */
+}
+
+.right-side {
+    justify-content: flex-end;
+    padding-right: 15px;
+}
+
+.system-message-wrapper {
+    position: relative;
+    flex: 0 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    z-index: 1006;
+}
+
+.system-message-btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 204, 255, 0.75);
+    border-radius: 6px;
+    background: linear-gradient(180deg, rgba(12, 70, 108, 0.85), rgba(4, 30, 56, 0.9));
+    box-shadow: inset 0 0 12px rgba(0, 204, 255, 0.12), 0 0 10px rgba(0, 204, 255, 0.25);
+    color: #d8f7ff;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.system-message-btn:hover {
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 16px rgba(0, 204, 255, 0.2), 0 0 14px rgba(0, 204, 255, 0.45);
+    transform: translateY(-1px);
+}
+
+.system-message-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.system-message-toast {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 10px);
+    max-width: 320px;
+    min-width: 190px;
+    padding: 8px 12px;
+    border: 1px solid rgba(0, 204, 255, 0.36);
+    border-left: 3px solid rgba(0, 204, 255, 0.72);
+    border-radius: 6px;
+    background: rgba(4, 24, 42, 0.92);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
+    color: #dff8ff;
+    font-size: 13px;
+    line-height: 1.45;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(8px, -50%);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    z-index: 2;
+}
+
+.system-message-toast.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(0, -50%);
+}
+
+.system-message-toast.success {
+    border-left-color: #00e676;
+}
+
+.system-message-toast.warning {
+    border-left-color: #ffcc00;
+}
+
+.system-message-toast.error {
+    border-left-color: #ff4d5e;
+}
+
+.system-message-badge {
+    position: absolute;
+    top: -4px;
+    right: -5px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 8px;
+    background: #ff334a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 15px;
+    text-align: center;
+    box-shadow: 0 0 8px rgba(255, 51, 74, 0.75);
+    box-sizing: border-box;
+}
+
+.system-message-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 330px;
+    max-height: 320px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 204, 255, 0.65);
+    border-radius: 6px;
+    background: rgba(3, 20, 38, 0.96);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55), inset 0 0 18px rgba(0, 204, 255, 0.12);
+    color: #d8f7ff;
+}
+
+.system-message-panel.hidden,
+.system-message-badge.hidden {
+    display: none;
+}
+
+.system-message-panel-title {
+    height: 36px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 204, 255, 0.35);
+    background: rgba(9, 74, 113, 0.55);
+    color: #9eefff;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.system-message-list {
+    max-height: 284px;
+    overflow-y: auto;
+}
+
+.system-message-empty {
+    padding: 18px 12px;
+    color: rgba(216, 247, 255, 0.58);
+    font-size: 13px;
+    text-align: center;
+}
+
+.system-message-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0, 204, 255, 0.18);
+    border-left: 3px solid rgba(0, 204, 255, 0.55);
+    background: rgba(8, 41, 70, 0.52);
+}
+
+.system-message-item.warning {
+    border-left-color: #ffcc00;
+}
+
+.system-message-item.error {
+    border-left-color: #ff4d5e;
+}
+
+.system-message-item.success {
+    border-left-color: #00ff66;
+}
+
+.system-message-item-time {
+    margin-bottom: 4px;
+    color: rgba(158, 239, 255, 0.62);
+    font-size: 11px;
+}
+
+.system-message-item-text {
+    color: #e8fbff;
+    font-size: 13px;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+/* 3. 最左侧固定圆形 Logo 按钮 */
+.cyber-logo-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #000000;
+    border: 2px solid #00ccff;
+    box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.csg-logo-img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* 4. 斜切导航容器组：无缝嵌套的核心逻辑 */
+.cyber-nav {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    flex: 1;
+    /* 让导航条自动向中央靠拢填充空隙 */
+}
+
+/* 左侧导航向右延展，右侧导航向左延展，彻底消除断层 */
+.nav-left-wing {
+    justify-content: flex-end;
+    padding-right: 15px;
+    /* 与中央框切角形成平行缝隙 */
+}
+
+.nav-right-wing {
+    justify-content: flex-start;
+    padding-left: 15px;
+}
+
+/* 利用 skewX 实现完美贴合中央六边形的平行选项卡 */
+.nav-item {
+    position: relative;
+    padding: 0 20px;
+    margin: 0 -1px;
+    /* 让相邻选项卡的斜边互相重叠镶嵌 */
+
+    /* 核心动效：左侧向右倾斜(+30deg)贴合左切角，右侧向左倾斜(-30deg)贴合右切角 */
+    background: transparent;
+    /* 默认通透底色 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    /* 移除突兀的左右边框，改用光晕界定 */
+}
+
+/* 针对左右两翼分别倾斜，实现镜像对称的完美贴合感 */
+.nav-left-wing .nav-item {
+    transform: skewX(30deg);
+}
+
+.nav-right-wing .nav-item {
+    transform: skewX(-30deg);
+}
+
+/* 容器倾斜后内部文字必须反向修正回来 */
+.nav-left-wing .nav-content {
+    transform: skewX(-30deg);
+}
+
+.nav-right-wing .nav-content {
+    transform: skewX(30deg);
+}
+
+.nav-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #79bbff;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+    white-space: nowrap;
+}
+
+/* 选项卡悬浮与激活态：沉浸式高亮底色 */
+.nav-item:hover,
+.nav-item.active {
+    background: linear-gradient(180deg, rgba(0, 160, 255, 0.05) 0%, rgba(0, 229, 255, 0.2) 100%);
+}
+
+.nav-item:hover .nav-content,
+.nav-item.active .nav-content {
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.8);
+}
+
+/* 底部发光光线 */
+.active-glow-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #00e5ff;
+    box-shadow: 0 -2px 8px #00e5ff;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.nav-item.active .active-glow-bar,
+.nav-item:hover .active-glow-bar {
+    opacity: 1;
+}
+
+/* 5. 中央发光主标题容器：与两侧平行切割精准嵌合 */
+.header-center {
+    position: relative;
+    width: 480px;
+    /* 黄金比例宽度 */
+    height: 100%;
+    z-index: 10;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 12px rgba(0, 204, 255, 0.4));
+}
+
+/* 外围蓝色框体：配合左右翼的 30deg 倾角进行匹配裁切 */
+.center-title-wrapper {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #0b4c8c;
+
+    /* 精确推算出的机甲顶盖裁切路径（切角斜率与导航选项卡完美一致） */
+    clip-path: polygon(35px 0%,
+            calc(100% - 35px) 0%,
+            100% 40%,
+            calc(100% - 35px) 100%,
+            35px 100%,
+            0% 40%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 蜂窝主体层：保留 0.25 高透明度蜂窝质感 */
+.title-bg-glow {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+
+    background:
+        radial-gradient(ellipse at center, rgba(0, 229, 255, 0.25) 0%, rgba(2, 20, 45, 0.8) 70%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 24 42'%3E%3Cpath fill='%2300ccff' fill-opacity='0.25' d='M12 6.5l10 5.8v11.6l-10 5.8-10-5.8V12.3L12 6.5zm0 1.5L3.3 13v10l8.7 5 8.7-5V13L12 8z'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, #021631 0%, #06386e 100%);
+
+    clip-path: polygon(34px 0%,
+            calc(100% - 34px) 0%,
+            calc(100% - 1px) 40%,
+            calc(100% - 34px) calc(100% - 1px),
+            34px calc(100% - 1px),
+            1px 40%);
+
+    box-shadow:
+        inset 0 0 25px rgba(0, 229, 255, 0.8),
+        inset 0 -5px 15px #00e5ff;
+    z-index: 1;
+}
+
+/* 主标题文字层 */
+.center-title-text {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 900;
+    letter-spacing: 4px;
+
+    background: linear-gradient(180deg, #ffffff 0%, #a8e0ff 40%, #00d9ff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    text-shadow:
+        0 0 10px rgba(0, 204, 255, 0.6),
+        0 0 20px rgba(0, 204, 255, 0.4);
+    z-index: 3;
+}
+
+/* 3. 急停按钮：使用绝对定位强行固定在最右侧，不占用中间的居中空间 */
+.emergency-btn {
+    position: absolute;
+    /* ✅ 核心修改：脱离常规流 */
+    right: 0;
+    /* 贴紧父容器右侧 */
+
+    /* 保持原有的外观样式 */
+    height: 48px;
+    min-width: 100px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid #ff7b7b;
+    background: linear-gradient(180deg, #ff6565, #c81212);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 80, 80, 0.8);
+    pointer-events: auto;
+}
+
+/* 急停按钮悬浮效果（更明显一点） */
+.emergency-btn:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 0 18px rgba(255, 120, 120, 1);
+    filter: brightness(1.05);
+}
+
+/* ====== GPR 三维重建视图样式 ====== */
+
+.gpr-panel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.gpr-panel.hidden {
+    display: none;
+}
+
+/* 修改原有的 .gpr-controls，增加 flex-wrap 防止控件过多挤出屏幕 */
+.gpr-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    /* 允许控件换行 */
+    gap: 8px;
+    font-size: 14px;
+}
+
+/* 新增：为点云输入框的 label 增加一点左侧间距，使其与前面的按钮隔开 */
+.pcd-label {
+    margin-left: 10px;
+}
+
+/* 新增：点云加载按钮的专属样式（采用偏橙黄色，与 GPR 的蓝色系区分开） */
+.btn-pcd {
+    background: rgba(230, 162, 60, 0.8) !important;
+    border: 1px solid #e6a23c !important;
+    color: #ffffff !important;
+}
+
+/* 点云加载按钮的悬停高亮特效 */
+.btn-pcd:hover {
+    background: rgba(230, 162, 60, 1) !important;
+    box-shadow: 0 0 8px rgba(230, 162, 60, 0.8) !important;
+    border-color: #ffffff !important;
+}
+
+/* 三维重建页：清除已加载点云地图按钮 */
+.btn-clear-pcd {
+    background: rgba(180, 54, 54, 0.82) !important;
+    border: 1px solid #ff6b6b !important;
+    color: #ffffff !important;
+}
+
+.btn-clear-pcd:hover {
+    background: rgba(220, 68, 68, 1) !important;
+    box-shadow: 0 0 8px rgba(255, 90, 90, 0.75) !important;
+    border-color: #ffffff !important;
+}
+
+.global-operation-log {
+    flex: 0 0 72px;
+    box-sizing: border-box;
+    padding: 5px 8px;
+    border: 1px solid rgba(120, 200, 255, 0.38);
+    background: rgba(3, 32, 60, 0.72);
+    box-shadow: 0 0 6px rgba(0, 180, 255, 0.18);
+    overflow: hidden;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+}
+
+.global-operation-log-title {
+    margin-bottom: 2px;
+    color: #77caff;
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.global-operation-log-text {
+    max-height: 50px;
+    overflow-y: auto;
+    padding-right: 4px;
+    color: #a8e0ff;
+    font-size: 10px;
+    line-height: 1.3;
+    word-break: break-word;
+    white-space: normal;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 229, 255, 0.55) transparent;
+}
+
+.global-operation-log-line {
+    margin-bottom: 2px;
+    color: #a8e0ff;
+}
+
+.global-operation-log-text::-webkit-scrollbar {
+    width: 4px;
+}
+
+.global-operation-log-text::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: rgba(0, 229, 255, 0.45);
+}
+
+.global-operation-log-text.success,
+.global-operation-log-line.success {
+    color: #8bff8b;
+}
+
+.global-operation-log-text.error,
+.global-operation-log-line.error {
+    color: #ff8080;
+}
+
+.global-operation-log-text.warning,
+.global-operation-log-line.warning {
+    color: #ffd45a;
+}
+
+.gpr-controls input[type="text"],
+.gpr-controls select {
+    flex: 0 0 auto;
+    min-width: 100px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(120, 200, 255, 0.6);
+    background: rgba(3, 20, 40, 0.8);
+    color: #eaf6ff;
+}
+
+
+.gpr-controls button {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(120, 200, 255, 0.8);
+    background: linear-gradient(90deg, #0b4a7c, #3d79ad);
+    color: #eaf6ff;
+    cursor: pointer;
+}
+
+.gpr-controls button:hover {
+    filter: brightness(1.1);
+}
+
+.gpr-views {
+    flex: 1;
+    display: grid;
+    /* 默认大屏：1:1:2 的比例 */
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 10px;
+    min-height: 0;
+}
+
+.gpr-view {
+    position: relative;
+    background: rgba(4, 20, 40, 0.8);
+    border: 1px solid rgba(120, 200, 255, 0.4);
+    border-radius: 8px;
+    padding: 6px;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.gpr-view h3 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+}
+
+.gpr-view canvas {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    background: black;
+    display: block;
+
+    /* 保持 JS 按原始矩阵比例生成的画布比例，剩余空间自动留黑。 */
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.gpr-view-3d #threeContainer {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.gpr-display-mode-note {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+/* ============ 4. 媒体查询：适配笔记本小屏幕 ============ */
+
+/* 针对标准笔记本屏幕 (宽度 <= 1400px 或 高度 <= 800px) */
+@media screen and (max-width: 1400px),
+screen and (max-height: 800px) {
+
+    /* 1. 紧凑化主体框架：释放上下垂直空间 */
+    .layout {
+        padding-top: 68px;
+        /* 略微拉近顶部导航栏间距 */
+        padding-bottom: 55px;
+        /* 缩减底部给按钮组预留的高度空间 */
+    }
+
+    /* 2. 缩小左侧控制面板总宽 */
+    .left-panel {
+        width: 230px;
+        height: calc(100vh - 70px);
+        /* 从原先的 280px 缩窄，为右侧主视图让出可视区域 */
+    }
+
+    /* 3. 底部模式按钮组自适应适配：完美居中并缩减间距 */
+    .bottom-mode-group {
+        gap: 18px;
+        /* 缩减按钮之间的间距，防止在小屏下过于分散超出安全边界 */
+    }
+
+    .bottom-mode-group .tech-mode-btn {
+        width: 150px;
+        /* 按比例缩减按钮宽度 */
+        height: 40px;
+        /* 压低按钮高度 */
+        font-size: 14px;
+        /* 配合缩小字号 */
+    }
+
+    /* 4. 底部总容器与急停按钮同步压缩 */
+    .bottom-actions {
+        height: 40px;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+    }
+
+    .emergency-btn {
+        height: 40px;
+        right: 15px;
+        min-width: 85px;
+        padding: 6px 12px;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    /* 5. 侧边栏内部元素尺寸整体降级，彻底解决小屏纵向重叠溢出 */
+    .panel-header {
+        height: 28px;
+        line-height: 28px;
+        font-size: 14px;
+    }
+
+    /* 缩小移动控制盘按钮，防止在低分辨率下撑爆容器 */
+    .side-control-pad .mini-btn {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 16px !important;
+    }
+
+    .side-control-pad .stop-btn {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 11px !important;
+    }
+
+    .side-control-pad {
+        gap: 4px;
+        padding-top: 4px;
+    }
+
+    /* 调整中间视图面板（速度控制与机械臂）在小屏下的内边距 */
+    .speed-panel,
+    .nav-control-area,
+    .arm-data-container {
+        padding: 6px !important;
+    }
+
+    .speed-header,
+    .arm-data-header,
+    .group-title {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    /* 压缩滑条行高 */
+    .slider-row {
+        height: 20px;
+    }
+
+    /* 缩减集成机械臂操作盘内加减按钮的高度 */
+    .j-ctrl-row .joint-btn {
+        width: 24px !important;
+        height: 20px !important;
+        line-height: 16px;
+        font-size: 12px;
+    }
+
+    .j-ctrl-row .j-val {
+        font-size: 14px;
+    }
+}
+
+/* 针对特别窄的屏幕（竖屏或分屏），强制将 3D 视图换行 */
+@media screen and (max-width: 1000px) {
+    .bottom-mode-group {
+        gap: 10px;
+    }
+
+    .bottom-mode-group .tech-mode-btn {
+        width: 132px;
+        font-size: 13px;
+        letter-spacing: 0;
+    }
+
+    .gpr-views {
+        /* 改为两行布局：上面两个 2D，下面一个 3D */
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+
+    /* 让第3个元素（3D视图）跨两列，占满第二行 */
+    .gpr-view-3d {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ✅ [新增] 标注按钮的小型样式 */
+.action-btn-small {
+    padding: 4px 10px;
+    font-size: 13px;
+    background: rgba(10, 60, 90, 0.8);
+    border: 1px solid rgba(120, 200, 255, 0.6);
+    color: #eaf6ff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* 按钮激活状态（开启时变亮） */
+.action-btn-small.active {
+    background: rgba(0, 150, 255, 0.8);
+    color: #fff;
+    box-shadow: 0 0 8px rgba(0, 150, 255, 0.6);
+    border-color: #fff;
+}
+
+/* ====== 机器人控制面板布局 ====== */
+.robot-panel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    /* 左右分栏 */
+    gap: 8px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.robot-panel.hidden {
+    display: none !important;
+    /* 强制隐藏 */
+}
+
+/* 左侧列 (占 70%) */
+.robot-left-col {
+    flex: 7;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 右侧列 (占 30%) */
+.robot-right-col {
+    flex: 3;
+}
+
+/* 占位符样式 (虚线框 + 文字居中) */
+.placeholder-box {
+    border: 2px dashed rgba(120, 200, 255, 0.4);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(120, 200, 255, 0.6);
+    text-align: center;
+}
+
+/* 左上：显示区域 */
+.nav-display-area {
+    flex: 1.4;
+    /* 上半部分稍微高一点 */
+}
+
+/* 左下：运动控制区域容器 */
+.nav-control-area {
+    flex: 1.2;
+    background: rgba(5, 30, 50, 0.6);
+    border: 1px solid rgba(100, 180, 255, 0.3);
+    border-radius: 8px;
+
+    /* 🔥 核心改动：变为水平 Flex 布局 */
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    /* 三块区域之间的间隙 */
+    padding: 10px;
+    align-items: stretch;
+    /* 让三块区域高度一致 */
+}
+
+/* 控制盘 (3x3 布局) */
+.control-pad {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pad-row {
+    display: flex;
+    gap: 4px;
+}
+
+.pad-cell {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 方向按钮样式 */
+.dir-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    border: 2px solid rgba(0, 200, 255, 0.5);
+    background: linear-gradient(145deg, #1a4a6d, #0d2a40);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    transition: all 0.1s;
+}
+
+.dir-btn:active {
+    transform: scale(0.95);
+    background: #00ccff;
+    box-shadow: 0 0 15px #00ccff;
+}
+
+/* 停止按钮 (红色) */
+.stop-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    /* 圆形 */
+    border: 2px solid #ff4d4d;
+    background: radial-gradient(circle, #ff6666, #990000);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3);
+}
+
+.stop-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 15px red;
+}
+
+.control-label {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+/* 2. 新增：三个子区域通用样式 */
+.motion-sub-col {
+    flex: 1;
+    /* 三块区域平分宽度 (1:1:1) */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* 3. 新增：内部的小型占位符样式 (虚线框) */
+.placeholder-box-small {
+    border: 1px dashed rgba(120, 200, 255, 0.3);
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+}
+
+.placeholder-text-small {
+    font-size: 12px;
+    color: rgba(120, 200, 255, 0.5);
+    text-align: center;
+}
+
+/* ✅ [新增] 科技感功能按钮样式 (机器狗站立/运动控制) */
+
+/* 按钮容器布局 */
+.special-btn-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    /* 按钮之间的间距 */
+    width: 100%;
+    height: 100%;
+}
+
+/* ==========================================
+   🚀 底部科技感模式按钮：立体质感重构
+   ========================================== */
+
+/* 通用模式按钮样式 */
+.tech-mode-btn {
+    width: 160px;
+    height: 48px;
+    /* 统一匹配底部高度 */
+
+    /* 1. 实体化渐变背景：深邃蓝底 + 顶部高光微透，彻底告别单薄透明 */
+    background: linear-gradient(180deg, rgba(16, 60, 110, 0.85) 0%, rgba(6, 28, 55, 0.95) 100%);
+
+    /* 2. 精细边框：顶部较亮（模拟迎光面），底部较暗，形成立体浮雕感 */
+    border-top: 1px solid #00c6ff;
+    border-left: 1px solid rgba(0, 160, 233, 0.6);
+    border-right: 1px solid rgba(0, 160, 233, 0.6);
+    border-bottom: 1px solid #005088;
+
+    /* 3. 复合阴影：外侧柔和发光 + 内部顶层提亮（关键质感来源） */
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.6),
+        /* 底部整体实体阴影 */
+        0 0 10px rgba(0, 160, 233, 0.4),
+        /* 外侧蓝色微光 */
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    /* 内部顶部玻璃质感高光 */
+
+    color: #eaf6ff;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 6px;
+    /* 稍微圆润一点点，手感更好 */
+    outline: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    /* 保证图标和文字间隔舒适 */
+
+    /* 顺滑平行的过渡动画 */
+    transition: all 0.25s cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+/* 🖱️ 鼠标悬浮态 (Hover)：犹如被能量点亮 */
+.tech-mode-btn:hover {
+    color: #ffffff;
+    /* 整体背景色阶提亮 */
+    background: linear-gradient(180deg, rgba(28, 95, 170, 0.95) 0%, rgba(10, 45, 85, 0.95) 100%);
+    border-top-color: #ffffff;
+    border-bottom-color: #00a0e9;
+    /* 外发光范围扩大，内高光增强 */
+    box-shadow:
+        0 6px 15px rgba(0, 0, 0, 0.7),
+        0 0 18px rgba(0, 229, 255, 0.8),
+        inset 0 2px 5px rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    /* 轻轻浮起 */
+}
+
+/* 🎯 鼠标按下态 (Active)：强烈的真实物理下压感 */
+.tech-mode-btn:active {
+    transform: translateY(1px);
+    /* 往下沉 */
+    background: linear-gradient(180deg, rgba(5, 20, 40, 0.95) 0%, rgba(12, 45, 85, 0.95) 100%);
+    /* 阴影翻转为纯内阴影，模拟按下去的凹陷感 */
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.8);
+    border-top-color: #005088;
+}
+
+/* 图标样式 */
+.btn-icon {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+/* 右侧列容器调整：去掉原来的虚线框样式 */
+.robot-right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* 覆盖之前的 placeholder 样式 */
+    border: none !important;
+    background: transparent !important;
+}
+
+/* 分组盒子 */
+.control-group-box {
+    background: rgba(5, 30, 50, 0.6);
+    border: 1px solid rgba(100, 180, 255, 0.3);
+    border-radius: 8px;
+    padding: 8px;
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
+}
+
+.group-title {
+    font-size: 14px;
+    /* ✏️ 修改：从 13px 改为 14px */
+    font-weight: bold;
+    /* ✏️ 保持加粗 */
+    /* 🗑️ 删除了原有的 font-family 强制属性，让其自然继承全局的 YaHei */
+    color: #87c8ff;
+    border-bottom: 1px solid rgba(135, 200, 255, 0.2);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    text-align: center;
+}
+
+/* --- 末端控制样式 --- */
+.cartesian-grid {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex: 1;
+}
+
+.cart-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.axis-label {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.cart-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.dpad-row {
+    display: flex;
+    gap: 4px;
+}
+
+.dpad-center {
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.cart-btn {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(145deg, #1a4a6d, #0d2a40);
+    border: 1px solid rgba(0, 200, 255, 0.5);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.cart-btn:active {
+    background: #00ccff;
+}
+
+.z-btn {
+    background: linear-gradient(145deg, #6d4a1a, #402a0d);
+    border-color: #ffaa00;
+}
+
+.z-btn:active {
+    background: #ffaa00;
+}
+
+/* --- 关节控制样式 --- */
+
+.joint-label {
+    flex: 1;
+    font-size: 12px;
+    color: #eaf6ff;
+    padding-left: 5px;
+}
+
+.joint-btn {
+    width: 32px;
+    height: 28px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 5px;
+    border-radius: 4px;
+    /* ✅ 核心修改：禁止用户选中文字 */
+    user-select: none;
+    -webkit-user-select: none;
+    /* Safari/Chrome */
+    -moz-user-select: none;
+    /* Firefox */
+
+    /* ✅ 禁止图片/元素拖拽行为 */
+    -webkit-user-drag: none;
+
+    /* ✅ 解决移动端长按弹出菜单的问题 */
+    -webkit-touch-callout: none;
+
+    /* 给一个更好的点击反馈 */
+    transition: transform 0.1s, background-color 0.1s;
+}
+
+.joint-btn.minus {
+    background: #4a1a1a;
+    border: 1px solid #ff4d4d;
+}
+
+.joint-btn.minus:active {
+    background: #ff0000;
+}
+
+.joint-btn.plus {
+    background: #1a4a1a;
+    border: 1px solid #4dff4d;
+}
+
+.joint-btn.plus:active {
+    background: #00ff00;
+    color: black;
+}
+
+/* === 信息栏样式 === */
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* 条目间距 */
+    padding: 5px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    /* 左右对齐 */
+    align-items: center;
+    font-size: 14px;
+    border-bottom: 1px dashed rgba(135, 200, 255, 0.15);
+    /* 分隔线 */
+    padding-bottom: 8px;
+}
+
+.info-label {
+    color: #87c8ff;
+    /* 浅蓝标签色 */
+}
+
+.info-value {
+    color: #eaf6ff;
+    font-family: monospace;
+    /* 等宽字体显得更科技 */
+}
+
+/* 状态徽章样式 */
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+/* 在线状态 (绿色) */
+.status-badge.online {
+    background-color: rgba(0, 255, 0, 0.15);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.4);
+}
+
+/* 离线状态 (红色) */
+.status-badge.offline {
+    background-color: rgba(255, 0, 0, 0.15);
+    border: 1px solid #ff4d4d;
+    color: #ff4d4d;
+}
+
+/* 前后照明灯：按钮文字表示下一步可执行的动作。 */
+.light-control-btn {
+    min-width: 58px;
+    height: 25px;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-family: "Microsoft YaHei", system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 19px;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease,
+        box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.light-control-btn.action-on {
+    border: 1px solid #00e676;
+    background: rgba(0, 230, 118, 0.14);
+    color: #36f58f;
+    box-shadow: 0 0 6px rgba(0, 230, 118, 0.3);
+}
+
+.light-control-btn.action-off {
+    border: 1px solid #ff5a67;
+    background: rgba(255, 60, 75, 0.14);
+    color: #ff6673;
+    box-shadow: 0 0 6px rgba(255, 60, 75, 0.25);
+}
+
+.light-control-btn.pending {
+    min-width: 68px;
+    border: 1px solid #ffbd2e;
+    background: rgba(255, 189, 46, 0.14);
+    color: #ffd166;
+    cursor: wait;
+}
+
+.light-control-btn.unknown {
+    min-width: 68px;
+    border: 1px solid rgba(145, 174, 198, 0.45);
+    background: rgba(82, 108, 130, 0.15);
+    color: rgba(201, 220, 235, 0.65);
+    cursor: not-allowed;
+}
+
+.light-control-btn.action-on:not(:disabled):hover,
+.light-control-btn.action-off:not(:disabled):hover {
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.48);
+    transform: translateY(-1px);
+}
+
+.light-control-btn:disabled {
+    transform: none;
+}
+
+.light-control-btn.action-on:disabled,
+.light-control-btn.action-off:disabled {
+    cursor: not-allowed;
+    opacity: 0.72;
+}
+
+/* ====== 路径查找及故障定点面板布局 ====== */
+.path-fault-panel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    /* 启用 Flex 布局 */
+    gap: 10px;
+    /* 列之间的间距 */
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* 通用列样式 */
+.pf-col {
+    display: flex;
+    flex-direction: column;
+    background: rgba(5, 30, 50, 0.6);
+    /* 半透明深蓝底色 */
+    border: 1px solid rgba(100, 180, 255, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    /* 防止内容溢出圆角 */
+}
+
+/* 比例分配核心代码 */
+.pf-side {
+    flex: 0.7;
+    /* 默认侧栏占 0.7 份；左侧信号栏会单独压缩到 0.7 份 */
+}
+
+.pf-center {
+    flex: 1.7;
+    /* 中间地图区占 1.7 份 */
+}
+
+.path-fault-panel>.pf-side:first-child {
+    flex: 0.6;
+    /* 左侧信号监测区占 0.6 份 */
+}
+
+/* 内部标题样式 */
+.pf-header {
+    height: 32px;
+    line-height: 32px;
+    background: linear-gradient(90deg, rgba(10, 60, 90, 0.9), rgba(5, 30, 50, 0.0));
+    color: #a8e0ff;
+    padding-left: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(100, 180, 255, 0.2);
+}
+
+/* 内部内容容器 */
+.pf-body {
+    flex: 1;
+    /* 填满剩余高度 */
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================
+   ✅ [新增] 路径规划面板中间列的新布局
+   ========================================== */
+
+/* 上半部分：地图区域 (占 3/4) */
+.pf-map-wrapper {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 下半部分：视频区域 (占 1/4) */
+.pf-video-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    border-top: 1px solid rgba(100, 180, 255, 0.3);
+    background: #000;
+}
+
+/* 复用 video-box 样式，但在 pf下面可能需要去除一些边距 */
+.pf-video-wrapper .video-box {
+    border-right: 1px solid #444;
+}
+
+.pf-video-wrapper .video-box:last-child {
+    border-right: none;
+}
+
+/* ==========================================
+   信号强度监测区域 (Signal Monitor)
+   ========================================== */
+
+/* 覆盖默认容器样式，去边距并设置黑色背景 */
+#signalDataArea {
+    padding: 0 !important;
+    background-color: #000000;
+    position: relative;
+    overflow: hidden;
+
+    /* 🔥🔥🔥 核心修复代码 🔥🔥🔥 */
+    flex: 1;
+    /* 如果父容器是 flex-column，这会让它自动撑满剩余高度 */
+    height: 100%;
+    /* 双重保险 */
+    min-height: 200px;
+    /* 三重保险：最少也得给我 200px */
+}
+
+/* 信号波形画布 */
+#signalCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* 消除底部微小空隙 */
+}
+
+/* 状态角标 (WAITING / LIVE) */
+#signalStatus {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: #00ff00;
+    /* 亮绿色 */
+    font-size: 12px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    /* 等宽字体 */
+    font-weight: bold;
+    z-index: 10;
+    /* 保证浮在 Canvas 上层 */
+    text-shadow: 0 0 2px rgba(0, 0, 0, 1.0);
+    /*以此保证在波形覆盖时文字依然可见*/
+    pointer-events: none;
+    /* 鼠标穿透，不影响下方交互 */
+}
+
+/* ==========================================
+   ✅ [新增] 一键测试按钮样式 (橙色系)
+   ========================================== */
+.test-sequence-btn {
+    background: linear-gradient(180deg, #e6a23c 0%, #d35400 100%);
+    /* 橙色渐变背景 */
+    border: 1px solid #d35400;
+    /* 深橙色边框 */
+    color: white;
+    /* 白色文字 */
+    padding: 2px 8px;
+    /* 内边距 */
+    border-radius: 4px;
+    /* 圆角 */
+    cursor: pointer;
+    /* 鼠标变小手 */
+    font-size: 12px;
+    /* 字体大小 */
+    box-shadow: 0 0 5px rgba(230, 162, 60, 0.5);
+    /* 橙色发光阴影 */
+    transition: all 0.2s ease;
+    /* 动画过渡 */
+    outline: none;
+    /* 去掉点击时的黑框 */
+    margin-left: auto;
+    /* 确保靠右对齐 */
+}
+
+/* 鼠标悬浮效果 */
+.test-sequence-btn:hover {
+    filter: brightness(1.1);
+    /* 变亮一点 */
+    transform: scale(1.05);
+    /* 稍微放大 */
+    box-shadow: 0 0 8px rgba(230, 162, 60, 0.8);
+    /* 发光增强 */
+}
+
+/* 鼠标点击按下效果 */
+.test-sequence-btn:active {
+    transform: scale(0.95);
+    /* 稍微缩小，产生按压感 */
+    filter: brightness(0.9);
+    /* 变暗一点 */
+}
+
+/* ==========================================
+   ✅ [新增] 关节控制面板特定布局
+   ========================================== */
+
+/* 关节控制组容器：特定的高度比例 flex: 1.5 */
+.control-group-box.joints-group {
+    flex: 1;
+}
+
+/* 标题栏容器：Flex 布局，让标题和按钮左右对齐 */
+
+/* 确保视频容器去除默认的内边距 */
+.nav-display-area.video-container {
+    padding: 0 !important;
+    border: 1px solid #333;
+    background-color: #000;
+}
+
+/* 视频框样式 */
+.video-box {
+    width: 100%;
+    /* 默认高度由 flex: 1 自动分配 */
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 如果图片加载失败显示的文字颜色 */
+.video-box img,
+.video-box video {
+    color: #888;
+    font-size: 12px;
+}
+
+/* =================================================================
+   新增样式重构 (Refactored Styles)
+   ================================================================= */
+
+/* --- 1. 视频监控区域 (Video Monitor) --- */
+
+/* 视频总容器：左右排列 */
+.nav-display-area.video-container {
+    display: flex;
+    flex-direction: row;
+    /* 左右并排 */
+    padding: 0 !important;
+    /* 强制覆盖默认内边距 */
+    background-color: #000;
+    height: 100%;
+    width: 100%;
+}
+
+/* 单个视频格子 */
+.video-box {
+    flex: 1;
+    /* 平分宽度 */
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    /* 图片居中 */
+    align-items: center;
+    border-right: 1px solid #444;
+    /* 中间的分隔线 */
+}
+
+/* 最后一个视频格子不需要右边框 */
+.video-box:last-child {
+    border-right: none;
+}
+
+/* 视频画面/流 */
+.stream-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* 👈 将 contain 改为 cover，它会自动等比放大填满容器 */
+    object-position: center;
+    /* 👈 建议加上这行，保证画面是以正中心为基准进行放大裁剪的 */
+    background: #000;
+}
+
+.robot-camera-slot {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    overflow: hidden;
+}
+
+.robot-camera-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transform: none;
+    background: #000;
+}
+
+.robot-camera-video-fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transform: none;
+    background: #000;
+}
+
+/* 机器人控制与导航页为竖向监控区：居中裁切左右画面并自动铺满，消除上下黑色留白。
+   仅限定在 robotNavPanel，路径查找页仍使用 contain 保留完整视野。 */
+#robotNavPanel .robot-camera-canvas,
+#robotNavPanel .robot-camera-video-fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+}
+
+/* 源 video 只负责向 WebGL 提供纹理，移出屏幕但不使用 display:none，兼容移动端浏览器。 */
+.robot-camera-source-container {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: 2px;
+    height: 2px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.robot-camera-source-container video {
+    display: block;
+    width: 1px;
+    height: 1px;
+}
+
+/* 视频左上角的标签浮层 */
+.video-label-overlay {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 2px 6px;
+    font-size: 12px;
+    border-radius: 4px;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* 半透明黑底 */
+    pointer-events: none;
+    /* 让鼠标事件穿透标签 */
+}
+
+/* 标签特定颜色 */
+.label-front {
+    color: #0f0;
+}
+
+/* 绿色 */
+.label-rear {
+    color: #fa0;
+}
+
+/* 橙色 */
+
+
+/* --- 2. SLAM / 路径规划地图区域 (Map Area) --- */
+
+/* 地图容器 */
+.map-container {
+    padding: 0 !important;
+    background-color: #222;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* --- 3. 按钮与杂项微调 (Buttons & Misc) --- */
+
+/* 左右平移按钮字体大小 */
+.btn-strafe {
+    font-size: 14px !important;
+}
+
+/* 自动巡线按钮的上边距 */
+.btn-margin-top {
+    margin-top: 10px;
+}
+
+/* 通用隐藏类 (替代 display: none) */
+.hidden {
+    display: none !important;
+}
+
+/* =========================================
+   管线仪仪表盘样式
+   ========================================= */
+
+/* 下半部分 (实景抓拍区) - 自动占满所有剩余空间 */
+.pipeline-upper {
+    width: 100%;
+    border-bottom: 1px dashed #444;
+    display: flex;
+    flex-direction: column;
+    flex: 1 !important;
+    /* 👈 核心修改：占据 1 份高度 */
+    min-height: 0;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* 标题样式 */
+.fault-capture-title {
+    font-size: 13px;
+    color: #ffd700;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+/* 图片纵向排布容器 */
+.fault-capture-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* 图片之间的间距 */
+    width: 100%;
+    box-sizing: border-box;
+    /* 🌟 核心修改：改为 auto 允许上下滑动 */
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    /* 给滚动条预留空间 */
+}
+
+/* 🌟 美化滚动条 */
+.fault-capture-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.fault-capture-content::-webkit-scrollbar-thumb {
+    background: rgba(135, 200, 255, 0.4);
+    border-radius: 3px;
+}
+
+/* 绿框/橙框图片外层容器 */
+.img-wrapper {
+    /* 🌟 核心修改：禁止被压缩，并设定最小高度 140px */
+    flex: 0 0 auto;
+    min-height: 140px;
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 绿框与橙框保持不变 */
+.front-wrapper {
+    border: 1px solid #00ff00;
+}
+
+.rear-wrapper {
+    border: 1px solid #ffaa00;
+}
+
+/* 图片本身自适应大小 */
+.img-wrapper img {
+    width: 100%;
+    height: 100%;
+    /* contain: 保持图片比例缩放不被裁切；
+       如果想强行铺满整个框不留黑边，可改为 object-fit: cover; */
+    object-fit: contain;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+    text-align: center;
+}
+
+
+/* 2. 箭头样式基础 (默认熄灭状态) */
+.arrow-icon {
+    font-size: 40px;
+    /* 箭头大小 */
+    color: #333;
+    /* 默认暗灰色 (熄灭) */
+    text-shadow: 0 0 2px #000;
+    transition: all 0.2s;
+    /* 亮起时的过渡动画 */
+    line-height: 1;
+}
+
+/* 3. 激活状态 (亮起) */
+/* 左箭头激活 - 建议用红色或黄色表示偏离 */
+.arrow-icon.active-left {
+    color: #ff3333;
+    /* 亮红 */
+    text-shadow: 0 0 15px #ff0000;
+    /* 发光效果 */
+    transform: scale(1.1);
+    /* 稍微放大 */
+}
+
+/* 右箭头激活 */
+.arrow-icon.active-right {
+    color: #ff3333;
+    /* 亮红 */
+    text-shadow: 0 0 15px #ff0000;
+    transform: scale(1.1);
+}
+
+/* 信号0 (居中) - 两个箭头都变成绿色，表示“对准了” */
+.arrow-icon.active-center {
+    color: #00ff00;
+    /* 亮绿 */
+    text-shadow: 0 0 15px #00ff00;
+}
+
+/* 速度仪表盘容器 */
+.speed-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2px 5px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(120, 200, 255, 0.3);
+    border-radius: 6px;
+    color: #eaf6ff;
+    font-size: 12px;
+}
+
+.speed-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 2px;
+}
+
+.speed-label {
+    font-size: 11px;
+    color: #87c8ff;
+    border-bottom: 1px dashed rgba(135, 200, 255, 0.2);
+    margin-bottom: 2px;
+    text-align: left;
+}
+
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.slider-row span {
+    font-size: 11px;
+    width: 15px;
+    /* 标签宽度 */
+}
+
+.val-text {
+    width: 24px !important;
+    text-align: right;
+    color: #00ff00;
+    font-family: monospace;
+    display: inline-block;
+}
+
+/* 压缩滑条样式 */
+input[type="range"] {
+    flex: 1;
+    /* 占满剩余空间 */
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(120, 200, 255, 0.3);
+    border-radius: 2px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #00ccff;
+    cursor: pointer;
+}
+
+/* =========================================
+   修正版：速度控制仪表盘样式 (大字体+撑满布局)
+   ========================================= */
+
+/* 1. 仪表盘整体容器 */
+.speed-panel {
+    /* 继承父级 flex 布局 */
+    display: flex;
+    flex-direction: column;
+    /* 核心修改：均匀分布，消除中间的大片留白 */
+    justify-content: space-evenly;
+
+    background: rgba(5, 30, 50, 0.6);
+    /* 与左侧控制区背景保持一致 */
+    border: 1px solid rgba(120, 200, 255, 0.3);
+    border-radius: 8px;
+    /* 圆角加大 */
+    padding: 10px;
+    /* 增加内边距 */
+    box-sizing: border-box;
+    height: 100%;
+    /* 强制撑满父容器高度 */
+}
+
+/* 2. 分组块（手动/自动） */
+.speed-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* 增加行与行之间的间距 */
+}
+
+/* 速度控制分组标题 */
+.speed-header {
+    font-size: 14px;
+    font-weight: bold;
+    color: #87c8ff;
+    border-bottom: 1px solid rgba(135, 200, 255, 0.3);
+    padding-bottom: 2px;
+    /* 👈 缩减内边距 */
+    margin-bottom: 10px;
+    /* 👈 缩减外边距 */
+    white-space: nowrap;
+}
+
+/* 4. 单行滑条布局 */
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* 元素间隙加大 */
+    height: 24px;
+    /* 增加行高 */
+}
+
+/* =========================================
+   新增：滑条跟随浮动数值专属样式
+   ========================================= */
+
+/* 1. 压缩滑条容器行高与顶部边距，大幅节省垂直空间 */
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 26px;
+    /* 👈 从 32px 降到 26px */
+    margin-top: 4px;
+    /* 👈 从 8px 降到 4px */
+    margin-bottom: 0 !important;
+}
+
+/* 滑条外层相对定位容器 */
+.slider-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* 实时跟随在圆点正上方的浮动气泡 */
+.floating-tooltip {
+    position: absolute;
+    bottom: 12px;
+    /* 👈 从 16px 降到 14px，刚好位于滑块正上方不重叠 */
+    left: 0;
+    transform: translateX(-50%);
+
+    background: rgba(0, 204, 255, 0.2);
+    border: 1px solid #00ccff;
+    color: #00ff00;
+    font-family: 'Consolas', monospace;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 3px;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 0 5px rgba(0, 204, 255, 0.5);
+    transition: left 0.05s ease-out;
+}
+
+/* 右侧固定的最大值显示 */
+.val-max {
+    font-size: 13px;
+    font-family: 'Consolas', monospace;
+    color: #87c8ff;
+    /* 采用与标题一致的暗蓝色，弱化视觉，突出绿色的实时值 */
+    width: 24px;
+    text-align: right;
+    display: inline-block;
+    user-select: none;
+}
+
+/* 行首标签 (前进/横移) */
+.slider-label {
+    font-size: 13px;
+    /* 字体加大 */
+    color: #eaf6ff;
+    width: 36px;
+    /* 🔥 核心修改：加宽宽度，确保“横移:”不换行 */
+    text-align: left;
+    white-space: nowrap;
+    /* 强制不换行 */
+}
+
+/* 行尾数值 */
+.val-number {
+    font-size: 13px;
+    /* 字体加大 */
+    font-family: 'Consolas', monospace;
+    color: #00ff00;
+    width: 30px;
+    /* 数值区也稍微加宽 */
+    text-align: right;
+    display: inline-block;
+}
+
+/* 5. 滑条控件美化 */
+.custom-range {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* 滑条轨道 */
+.custom-range::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    /* 轨道变粗一点，更好看 */
+    background: rgba(120, 200, 255, 0.3);
+    border-radius: 3px;
+    border: none;
+}
+
+/* 滑条滑块 */
+.custom-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 14px;
+    /* 滑块变大 */
+    width: 14px;
+    border-radius: 50%;
+    background: #00ccff;
+    margin-top: -4px;
+    /* 垂直居中修正 */
+    box-shadow: 0 0 6px rgba(0, 204, 255, 0.8);
+    transition: transform 0.1s;
+}
+
+.custom-range:hover::-webkit-slider-thumb {
+    background: #fff;
+    transform: scale(1.2);
+}
+
+.custom-range:focus {
+    outline: none;
+}
+
+/* =========================================
+   ✅ 新增：侧边栏迷你控制盘样式
+   ========================================= */
+
+.side-control-pad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding-top: 10px;
+    height: 100%;
+}
+
+.side-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mt-10 {
+    margin-top: 10px;
+    /* 横移按钮稍微隔开一点 */
+}
+
+/* 迷你按钮尺寸 */
+.mini-btn {
+    width: 36px !important;
+    /* 比原来的 42px 小一点 */
+    height: 36px !important;
+    font-size: 14px !important;
+    border-width: 1px !important;
+    /* 边框细一点 */
+    margin: 0;
+}
+
+.side-label {
+    font-size: 12px;
+    color: #87c8ff;
+    opacity: 0.8;
+}
+
+/* =========================================
+   修复：侧边栏 STOP 按钮字体过大问题
+   ========================================= */
+#btnSideStop {
+    font-size: 10px !important;
+    /* 强制改回小字体 (原先箭头是14px) */
+    font-weight: 900;
+    /* 字体加粗，确保缩小后依然清晰 */
+    padding: 0;
+    /* 去掉内边距，争取空间 */
+    letter-spacing: -0.5px;
+    /* 稍微缩紧字母间距 */
+}
+
+/* ==========================================
+   新增：路径规划面板头部与按钮样式
+   ========================================== */
+
+/* 头部 Flex 布局，让标题和按钮左右对齐 */
+.pf-header-flex {
+    display: flex !important;
+    /* 强制覆盖原有的 block 布局 */
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 10px;
+}
+
+/* 按钮组容器 */
+.header-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 迷你按钮通用样式（已同步为实景抓拍按钮的极简暗蓝风格） */
+.header-btn-mini {
+    background: rgba(10, 60, 90, 0.6);
+    /* 统一低调的半透明暗蓝背景 */
+    border: 1px solid rgba(120, 200, 255, 0.4);
+    /* 细微的亮蓝色边框 */
+    color: #eaf6ff;
+    /* 浅蓝白字体 */
+    padding: 4px 8px;
+    /* 左右保留8px内边距，防止长文本过于贴边 */
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    text-align: center;
+    box-shadow: none;
+    white-space: nowrap;
+}
+
+/* 鼠标悬浮时稍微亮起 */
+.header-btn-mini:hover {
+    background: rgba(0, 150, 255, 0.5);
+    border-color: #ffffff;
+    box-shadow: 0 0 6px rgba(0, 150, 255, 0.5);
+    transform: scale(1.02);
+    /* 微微放大 */
+}
+
+/* 鼠标按下时的阻尼回弹 */
+.header-btn-mini:active {
+    transform: scale(0.95);
+    background: rgba(0, 120, 200, 0.8);
+}
+
+.cable-track-btn.cable-tracking-active {
+    color: #ffffff;
+    border-color: #ff5555;
+    background: rgba(190, 30, 30, 0.72);
+    box-shadow: 0 0 7px rgba(255, 70, 70, 0.45);
+}
+
+.cable-track-btn.cable-tracking-active:hover {
+    border-color: #ff8888;
+    background: rgba(220, 35, 35, 0.82);
+}
+
+.lidar-start-btn:disabled,
+.lidar-stop-btn:disabled {
+    opacity: 0.75;
+    cursor: wait;
+}
+
+.lidar-stop-btn {
+    border-color: rgba(255, 120, 120, 0.55);
+}
+
+
+/* ==========================================
+   新增：操作栏全自动填充样式 (Auto Fill)
+   ========================================== */
+
+/* 1. 操作栏容器设为 Flex 列布局 */
+#operationArea {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 10px !important;
+    gap: 10px;
+    /* 上下两大部分的间距 */
+    height: 100%;
+    /* 确保占满父容器 */
+}
+
+/* 2. 通用填充区域 (方向盘区 & 模式按钮区) */
+.fill-area {
+    flex: 1;
+    /* 两个区域平分垂直空间，自动拉伸 */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* 内部元素均匀分布 */
+    width: 100%;
+}
+
+/* 3. 针对方向盘区域的特殊拉伸 */
+.side-control-pad.fill-area {
+    align-items: center;
+    /* 按钮水平居中 */
+    justify-content: space-evenly;
+    /* 垂直方向均匀分布 */
+}
+
+/* 让方向盘里的每一行也稍微拉伸一点 */
+.side-control-pad .side-row {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* 放大侧边栏的方向按钮 (为了填满空间) */
+.side-control-pad .mini-btn {
+    width: 50px !important;
+    /* 加大宽度 */
+    height: 50px !important;
+    /* 加大高度 */
+    font-size: 20px !important;
+}
+
+.side-control-pad .stop-btn {
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 12px !important;
+}
+
+/* 4. 针对模式按钮区域的特殊拉伸 */
+.sidebar-mode-group {
+    gap: 10px;
+    /* 按钮之间的间距 */
+}
+
+/* 模式按钮全填充样式 */
+.tech-mode-btn.full-fill {
+    flex: 1;
+    /* 按钮本身垂直拉伸填满空间 */
+    width: 100%;
+    /* 水平填满 */
+    margin: 0;
+    /* 去掉默认外边距 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* 文字居中 */
+    font-size: 14px;
+    letter-spacing: 1px;
+    background: rgba(0, 100, 255, 0.2);
+    border: 1px solid rgba(0, 200, 255, 0.4);
+}
+
+.tech-mode-btn.full-fill:hover {
+    background: rgba(0, 100, 255, 0.4);
+    transform: translateY(-2px);
+    /* 悬浮动效 */
+}
+
+/* ==========================================
+   🟡 自动巡线与寻找破损点按钮的专属金色定制
+   ========================================== */
+#btnAutoTrack,
+#btnFindFaultOverlay {
+    /* 采用高贵稳重的暗金渐变 */
+    background: linear-gradient(180deg, rgba(130, 95, 20, 0.85) 0%, rgba(50, 35, 5, 0.95) 100%);
+
+    border-top: 1px solid #ffe600;
+    border-left: 1px solid rgba(255, 215, 0, 0.6);
+    border-right: 1px solid rgba(255, 215, 0, 0.6);
+    border-bottom: 1px solid #886000;
+
+    color: #ffd700;
+
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.6),
+        0 0 10px rgba(255, 215, 0, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.25);
+}
+
+/* 自动巡线/寻找破损点悬浮态 */
+#btnAutoTrack:hover,
+#btnFindFaultOverlay:hover {
+    color: #ffffff;
+    background: linear-gradient(180deg, rgba(180, 135, 30, 0.95) 0%, rgba(80, 55, 10, 0.95) 100%);
+    border-top-color: #ffffff;
+    border-bottom-color: #d4af37;
+    box-shadow:
+        0 6px 15px rgba(0, 0, 0, 0.7),
+        0 0 18px rgba(255, 215, 0, 0.8),
+        inset 0 2px 5px rgba(255, 255, 255, 0.5);
+}
+
+/* 自动巡线/寻找破损点按下态 */
+#btnAutoTrack:active,
+#btnFindFaultOverlay:active {
+    background: linear-gradient(180deg, rgba(30, 20, 5, 0.95) 0%, rgba(80, 55, 10, 0.95) 100%);
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
+    border-top-color: #886000;
+}
+
+/* ==========================================
+   新增：中间控制区左右分栏 (自动填充版)
+   ========================================== */
+
+/* 1. 主容器 */
+.nav-control-area {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 10px;
+    padding: 8px !important;
+    background: rgba(5, 30, 50, 0.6);
+    border: 1px solid rgba(100, 180, 255, 0.3);
+    border-radius: 8px;
+    /* 移除固定最小高度，让 flex 自动决定，或者给一个舒适的高度 */
+    min-height: 160px;
+}
+
+/* 2. 左侧：速度滑条容器 */
+.nc-left-speed {
+    flex: 4;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    /* 👈 从 10px 降到 5px，给底部腾出关键空间 */
+    justify-content: space-between;
+}
+
+/* 自动填充的组容器 */
+.speed-group-fill {
+    flex: 1;
+    /* 关键：自动拉伸填满剩余高度 */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    /* 内部元素均匀分布 */
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 5px 8px;
+}
+
+/* 3. 右侧：机械臂视频 */
+.nc-right-arm-video {
+    flex: 6;
+    /* 占 60% 宽度 */
+    background: #000;
+    border: 1px solid #444;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.arm-video-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    background: repeating-linear-gradient(45deg,
+            #0a0a0a,
+            #0a0a0a 10px,
+            #111 10px,
+            #111 20px);
+}
+
+.av-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+    opacity: 0.5;
+}
+
+/* 复用原有的滑条行样式，但确保在窄空间也能对齐 */
+.slider-row {
+    margin-bottom: 0 !important;
+    /* 去掉原有下边距，由 flex gap 控制 */
+}
+
+/* ==========================================
+   新增：管线仪罗盘仪表盘样式 (自动填充版)
+   ========================================== */
+
+/* 2. 罗盘圆形容器 (核心修改：自适应大小) */
+.compass-container {
+    position: relative;
+    /* 自动填充逻辑： */
+    height: 92%;
+    /* 高度占满父容器的 92% */
+    width: auto;
+    /* 宽度自动 */
+    aspect-ratio: 1 / 1;
+    /* 强制保持 1:1 正圆比例 */
+
+    /* 限制最大宽度，防止在极宽屏幕下溢出 */
+    max-width: 100%;
+
+    border-radius: 50%;
+    /* 圆形 */
+
+    /* 科技感边框 */
+    border: 3px solid rgba(0, 204, 255, 0.3);
+    box-shadow:
+        0 0 20px rgba(0, 204, 255, 0.2) inset,
+        0 0 10px rgba(0, 204, 255, 0.4);
+    background: radial-gradient(circle, rgba(0, 40, 80, 0.6) 0%, rgba(0, 20, 40, 0.9) 100%);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 2. 调整侧边箭头 (核心修改：定位到半圆中间) */
+.side-arrow {
+    position: absolute;
+    font-size: 3rem;
+    color: #555;
+    transition: all 0.3s;
+    z-index: 2;
+    text-shadow: none;
+    line-height: 1;
+    top: 50%;
+    /* 注意：这里不再写统一的 transform，而是分左右单独写 */
+}
+
+/* --- 左侧显示的箭头 (ID: arrowRight) --- */
+#arrowRight {
+    left: 25%;
+    /* 位于左半圆的中间 (25%) */
+    transform: translate(-50%, -50%);
+    /* 向左偏移自身的一半，实现中心对齐 */
+}
+
+/* 左侧箭头激活状态 */
+#arrowRight.active-left,
+#arrowRight.active-right,
+#arrowRight.active-center {
+    color: #ff3333;
+    text-shadow: 0 0 20px #ff0000;
+    /* 保持位置偏移的同时放大 */
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* --- 右侧显示的箭头 (ID: arrowLeft) --- */
+#arrowLeft {
+    right: 25%;
+    /* 位于右半圆的中间 (25%) */
+    transform: translate(50%, -50%);
+    /* 向右偏移自身的一半，实现中心对齐 */
+}
+
+/* 右侧箭头激活状态 */
+#arrowLeft.active-left,
+#arrowLeft.active-right,
+#arrowLeft.active-center {
+    color: #ff3333;
+    text-shadow: 0 0 20px #ff0000;
+    /* 保持位置偏移的同时放大 */
+    transform: translate(50%, -50%) scale(1.2);
+}
+
+/* 对中状态 (绿色) - 需要针对 ID 分别覆盖颜色 */
+#arrowRight.active-center,
+#arrowLeft.active-center {
+    color: #00ff00;
+    text-shadow: 0 0 20px #00ff00;
+}
+
+/* 3. 中间电缆组件 (核心修改：叠加布局) */
+.cable-assembly {
+    position: relative;
+    /* 设为相对定位，作为内部绝对定位的参照 */
+    width: 14px;
+    /* 固定组件宽度 */
+    height: 65%;
+    /* 占罗盘高度的 65% */
+    display: flex;
+    justify-content: center;
+}
+
+/* 粗线条电缆 */
+.cable-thick-line {
+    width: 100%;
+    /* 填满父容器宽度 */
+    height: 100%;
+    /* 填满父容器高度 */
+    background: linear-gradient(to bottom, #00ccff, #0066aa);
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 204, 255, 0.6);
+}
+
+/* 向上指的箭头 (核心修改：绝对定位到中间) */
+.cable-up-arrow {
+    position: absolute;
+    /* 绝对定位，浮在线条上面 */
+    top: 50%;
+    /* 位于垂直 50% 处 */
+    left: 50%;
+    /* 位于水平 50% 处 */
+    /* 初始居中定位 (X轴居中，Y轴居中) */
+    transform: translate(-50%, -50%);
+
+    color: #ccffff;
+    /* 颜色稍微亮白一点，防止和线条混色 */
+    font-size: 2.5rem;
+    /* 箭头大小 */
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    z-index: 3;
+    /* 确保在最上层 */
+
+    /* 应用新的呼吸动画 */
+    animation: pulseCenter 1.5s infinite ease-in-out;
+}
+
+/* 新的中间呼吸动画 (基于 translate(-50%, -50%) 微调) */
+@keyframes pulseCenter {
+
+    0%,
+    100% {
+        /* 回到正中心 */
+        transform: translate(-50%, -50%);
+        opacity: 0.8;
+    }
+
+    50% {
+        /* 稍微向上浮动一点点 (Y轴从 -50% 变到 -65%) */
+        transform: translate(-50%, -65%);
+        opacity: 1;
+        text-shadow: 0 0 15px rgba(255, 255, 255, 1);
+    }
+}
+
+/* 清除旧样式 */
+.arrow-divider {
+    display: none;
+}
+
+/* ==========================================
+   新增：机械臂数据仪表盘样式
+   ========================================== */
+.arm-data-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, rgba(20, 30, 40, 0.9), rgba(10, 15, 20, 0.95));
+    padding: 10px;
+    box-sizing: border-box;
+    color: #eaf6ff;
+}
+
+/* 机械臂实时姿态标题 */
+.arm-data-header {
+    font-size: 14px;
+    /* 保持 14px */
+    font-weight: bold;
+    /* 保持加粗 */
+    /* 🗑️ 删除了 font-family: "Microsoft YaHei"... !important; */
+    color: #87c8ff;
+    /* ✅ 统一替换为标准浅蓝色 */
+    border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pulse-dot {
+    color: #00ff00;
+    animation: pulse 1.5s infinite;
+}
+
+.arm-joints-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* 两列布局 */
+    gap: 8px;
+}
+
+.joint-box {
+    background: rgba(0, 229, 255, 0.05);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.j-label {
+    font-size: 12px;
+    color: #88aacc;
+    margin-bottom: 2px;
+}
+
+.j-val {
+    font-size: 18px;
+    font-family: 'Consolas', monospace;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+}
+
+/* ==========================================
+   ✅ [新增] 地图悬浮导航按钮样式
+   ========================================== */
+.map-nav-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+    /* 保证浮在 Canvas 上面 */
+}
+
+.nav-overlay-btn {
+    width: 60px;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(120, 200, 255, 0.5);
+    color: #eaf6ff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+
+}
+
+.nav-overlay-btn:hover {
+    background: rgba(0, 100, 200, 0.6);
+    transform: translateX(-2px);
+}
+
+/* 激活状态（正在选点） */
+.nav-overlay-btn.active {
+    background: rgba(255, 200, 0, 0.3);
+    border-color: #ffd700;
+    color: #ffd700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+/* 绿色开始按钮 */
+.nav-overlay-btn.success:hover {
+    background: rgba(0, 200, 0, 0.4);
+    border-color: #0f0;
+}
+
+/* 自主导航运行中：同一个按钮切换为醒目的停止状态 */
+.nav-overlay-btn.stop-active {
+    background: rgba(200, 0, 0, 0.55);
+    border-color: #ff4d4d;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.45);
+}
+
+.nav-overlay-btn.stop-active:hover {
+    background: rgba(255, 0, 0, 0.72);
+    border-color: #ff8080;
+}
+
+/* 红色清除按钮 */
+.nav-overlay-btn.danger:hover {
+    background: rgba(200, 0, 0, 0.4);
+    border-color: #f00;
+}
+
+/* 点云地图右上角的小型视角跟随开关 */
+.camera-follow-toggle {
+    position: absolute;
+    top: 164px;
+    right: 10px;
+    z-index: 999;
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid rgba(140, 190, 220, 0.42);
+    border-radius: 12px;
+    background: rgba(7, 22, 34, 0.78);
+    color: #b9d3e2;
+    font-size: 11px;
+    line-height: 22px;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.camera-follow-toggle:hover {
+    color: #ffffff;
+    border-color: rgba(190, 225, 245, 0.8);
+    background: rgba(18, 48, 66, 0.9);
+}
+
+.camera-follow-toggle.follow-active {
+    color: #66ffb3;
+    border-color: rgba(102, 255, 179, 0.8);
+    background: rgba(0, 90, 58, 0.72);
+}
+
+/* ==========================================
+   ✅ [新增] 导航距离显示样式
+   ========================================== */
+.nav-info-box {
+    background: rgba(0, 0, 0, 0.8);
+    /*稍微加深背景*/
+    border: 1px solid #00e5ff;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: left;
+    /* 改为左对齐 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    margin-bottom: 5px;
+    white-space: nowrap;
+    line-height: 1.4;
+    /* 增加行高 */
+}
+
+
+/* ==========================================
+   ✅ [新增] 电缆信息点击弹出框样式
+   ========================================== */
+.cable-info-popup {
+    position: absolute;
+    background: rgba(10, 30, 50, 0.85);
+    /* 深蓝色半透明背景 */
+    border: 1px solid #ffd700;
+    /* 黄色边框与电缆呼应 */
+    color: #eaf6ff;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    min-width: 160px;
+    pointer-events: auto;
+    /* 允许点击内部的关闭按钮 */
+
+    /* 将弹出框的基准点设置在底部中间，并向上偏移一点，以免挡住点击位置 */
+    transform: translate(-50%, -100%);
+    margin-top: -10px;
+}
+
+.popup-title {
+    font-weight: bold;
+    color: #ffd700;
+    border-bottom: 1px dashed rgba(255, 215, 0, 0.4);
+    padding-bottom: 5px;
+    margin-bottom: 8px;
+}
+
+.popup-item {
+    margin-bottom: 4px;
+    line-height: 1.5;
+}
+
+.hl-text {
+    color: #00ff00;
+    font-family: 'Consolas', monospace;
+}
+
+.popup-close {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 18px;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.popup-close:hover {
+    color: #ff4444;
+}
+
+/* ==========================================
+   新增：破损点拍照按钮样式 (绿色系)
+   ========================================== */
+.capture-btn {
+    background: linear-gradient(180deg, #67c23a 0%, #4f9e28 100%);
+    /* 绿色渐变 */
+    border: 1px solid #4f9e28;
+    box-shadow: 0 0 5px rgba(103, 194, 58, 0.5);
+}
+
+.capture-btn:hover {
+    box-shadow: 0 0 8px rgba(103, 194, 58, 0.8);
+}
+
+/* ==========================================
+   新增：破损点左侧拍照按钮样式 (青色系)
+   ========================================== */
+.capture-btn-left {
+    background: linear-gradient(180deg, #00ced1 0%, #008b8b 100%);
+    /* 青色渐变 */
+    border: 1px solid #008b8b;
+    box-shadow: 0 0 5px rgba(0, 206, 209, 0.5);
+}
+
+.capture-btn-left:hover {
+    box-shadow: 0 0 8px rgba(0, 206, 209, 0.8);
+}
+
+/* ==========================================
+   新增：二维剖面动态显隐布局控制
+   ========================================== */
+/* 当包含 hide-2d 类时，将原本的三列网格(1fr 1fr 2fr)改为单列(1fr)，让 3D 视图铺满 */
+.gpr-views.hide-2d {
+    grid-template-columns: 1fr;
+}
+
+/* 隐藏带有 gpr-view-2d 类的区域 */
+.gpr-views.hide-2d .gpr-view-2d {
+    display: none;
+}
+
+/* 偏移成像关闭时不保留空白列，原始二维剖面与三维视图按 1:2 排列。 */
+#mig2dView[hidden] {
+    display: none !important;
+}
+
+.gpr-views.migration-disabled:not(.hide-2d) {
+    grid-template-columns: 1fr 2fr;
+}
+
+/* ==========================================
+   新增：悬浮履带小车摇杆 UI
+   ========================================== */
+/* 修改 1：在最外层容器中增加禁用选中和拖拽的属性 */
+.floating-joystick {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 130px;
+    background: rgba(10, 30, 50, 0.7);
+    border: 1px solid rgba(0, 204, 255, 0.4);
+    border-radius: 12px;
+    padding: 15px 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 100;
+    transition: background 0.3s, border-color 0.3s;
+
+    /* 👇 新增：彻底屏蔽浏览器的默认文本选中和拖拽行为 */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+}
+
+.floating-joystick:hover {
+    background: rgba(10, 30, 50, 0.9);
+    border-color: rgba(0, 204, 255, 0.8);
+}
+
+.joystick-title {
+    color: #00ccff;
+    font-size: 13px;
+    margin-bottom: 12px;
+    font-weight: bold;
+    user-select: none;
+}
+
+.joystick-base {
+    width: 100px;
+    height: 100px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(135, 200, 255, 0.2);
+    border-radius: 50%;
+    position: relative;
+    touch-action: none;
+    /* 防止手机端触摸时触发页面滚动 */
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* 修改 2：去掉摇杆自带的 transition，改为纯净版 */
+.joystick-stick {
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, #00ccff, #005588);
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    box-shadow: 0 0 12px rgba(0, 204, 255, 0.6);
+    pointer-events: none;
+    /* 👇 新增这一行：强制浏览器为摇杆开启 GPU 硬件加速层 */
+    will-change: transform;
+}
+
+/* 👇 修改 3：新增一个专门用于松手回弹的动画类 */
+.joystick-stick.returning {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* 加入轻微的弹性回弹效果 */
+}
+
+.joystick-status {
+    color: #00ff00;
+    font-size: 13px;
+    margin-top: 12px;
+    font-family: 'Consolas', monospace;
+    user-select: none;
+}
+
+.dog-rot-joystick-base {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+.dog-rot-joystick-stick {
+    width: 44px;
+    height: 44px;
+    top: 43px;
+    left: 43px;
+}
+
+.dog-rot-joystick-base.compact {
+    width: 100px;
+    height: 100px;
+}
+
+.dog-rot-joystick-stick.compact {
+    width: 40px;
+    height: 40px;
+    top: 30px;
+    left: 30px;
+}
+
+/* ==========================================
+   ✅ [新增] 三维视图左下角实时GPS悬浮窗
+   ========================================== */
+.realtime-gps-overlay {
+    position: absolute;
+    bottom: 10px;
+    /* 靠底部 10px */
+    left: 10px;
+    /* 靠左侧 10px */
+    background: rgba(0, 0, 0, 0.5);
+    /* 半透明黑底，不挡视线 */
+    border: 1px solid rgba(0, 204, 255, 0.3);
+    /* 暗蓝色边框 */
+    color: #eaf6ff;
+    padding: 4px 8px;
+    /* 减小内边距，让整体变小 */
+    border-radius: 4px;
+    font-size: 11px;
+    /* 使用 11px 的小字体 */
+    font-family: 'Consolas', 'Monaco', monospace;
+    /* 等宽字体防止数字跳动 */
+    z-index: 100;
+    pointer-events: none;
+    /* 鼠标穿透，不会影响你用鼠标拖拽地图 */
+    backdrop-filter: blur(2px);
+}
+
+.realtime-gps-overlay .status-fixed {
+    color: #00ff00;
+    /* 固定解用绿色 */
+    font-weight: bold;
+}
+
+.realtime-gps-overlay .status-float {
+    color: #ffaa00;
+    /* 浮点解用橙色警告 */
+}
+
+/* ==========================================
+   下拉菜单及按钮 (极简暗蓝重构版)
+   ========================================== */
+.dropdown-group {
+    position: relative;
+    display: inline-block;
+}
+
+/* 下拉菜单外层容器：改为 Flex 布局，使内部按钮像卡片一样排列 */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    /* 向下稍微偏移，留出间隙 */
+    background-color: rgba(5, 20, 35, 0.85);
+    /* 整体较深的半透明底色，凸显按钮 */
+    min-width: 120px;
+    border: 1px solid rgba(120, 200, 255, 0.2);
+    border-radius: 4px;
+    z-index: 1000;
+    padding: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    flex-direction: column;
+    gap: 6px;
+    /* 按钮之间的垂直间距 */
+}
+
+/* 点击按钮后以 Flex 模式显示下拉框 */
+.dropdown-group.open .dropdown-content {
+    display: flex;
+}
+
+/* 下拉菜单中的每个选项按钮（完美复用实景抓拍按钮风格） */
+.dropdown-item {
+    background: rgba(10, 60, 90, 0.6);
+    border: 1px solid rgba(120, 200, 255, 0.4);
+    color: #eaf6ff;
+    padding: 6px 12px;
+    text-align: center;
+    /* 文字居中 */
+    border-radius: 4px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+    outline: none;
+    box-shadow: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+    /* 防止 padding 撑破父容器宽度 */
+    margin: 0;
+}
+
+/* 选项按钮：鼠标悬浮微亮发光 */
+.dropdown-item:hover {
+    background: rgba(0, 150, 255, 0.5);
+    border-color: #ffffff;
+    box-shadow: 0 0 6px rgba(0, 150, 255, 0.5);
+    transform: scale(1.02);
+    /* 微微放大增加交互感 */
+}
+
+/* 选项按钮：鼠标按下阻尼回弹 */
+.dropdown-item:active {
+    transform: scale(0.95);
+    background: rgba(0, 120, 200, 0.8);
+}
+
+/* 绘制状态下的按钮激活样式 */
+#btnManualDrawCable.drawing-active {
+    background: rgba(255, 0, 0, 0.2);
+    color: #ff4444 !important;
+    border-color: #ff4444 !important;
+    animation: simple-pulse 1.5s infinite;
+}
+
+@keyframes simple-pulse {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 0, 0, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(255, 0, 0, 0.4);
+    }
+}
+
+/* =================================================================
+   升级重构：机械臂整合面板与夹爪迁移样式
+   ================================================================= */
+
+/* 1. 机械臂中下区域左右分栏布局 */
+.arm-integrated-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    flex: 1;
+    align-items: stretch;
+    /* 保证左右两栏高度拉伸一致 */
+}
+
+/* 左侧 6 关节网格自适应 */
+.integrated-grid {
+    flex: 8;
+    /* 占据绝大多数空间 */
+    grid-template-columns: 1fr 1fr;
+    /* 保持两列排布 */
+    gap: 6px;
+}
+
+/* 单个集成关节盒子的微调 */
+.integrated-box {
+    padding: 2px 5px;
+    /* 稍微压缩上下内边距，防止内容溢出 */
+    justify-content: space-evenly;
+}
+
+/* 核心：将按钮和数值强行放在同一行且完美垂直对齐 */
+.j-ctrl-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 2px;
+}
+
+/* 数值显示居中，并限制最小宽度防止加减时发生水平抖动 */
+.j-ctrl-row .j-val {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    /* 稍微略微缩小字体以适配按钮并排 */
+    min-width: 45px;
+    margin: 0 4px;
+}
+
+/* 针对集成面板内的加减按钮进行专属尺寸微调 */
+.j-ctrl-row .joint-btn {
+    width: 28px !important;
+    height: 24px !important;
+    line-height: 20px;
+    margin: 0;
+    font-size: 14px;
+}
+
+/* 右侧快捷键专区纵向均匀排布 */
+.arm-quick-actions {
+    flex: 2;
+    /* 占据剩余右侧空间 */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    border-left: 1px dashed rgba(0, 229, 255, 0.2);
+    padding-left: 8px;
+}
+
+/* 让快捷键强行撑满右侧专区宽度 */
+.arm-quick-actions .full-w {
+    width: 100% !important;
+    margin: 0;
+    height: 32px;
+    font-size: 12px;
+}
+
+/* 2. 右上角末端姿态控制追加的夹爪容器样式 */
+.integrated-gripper-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 4px;
+}
+
+.gripper-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gripper-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+}
+
+/* ==========================================
+   ✅ [新增] 信号波形左上角悬浮电磁阈值控制框
+   ========================================== */
+.floating-threshold-box {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    /* 半透明深色底，保证文字清晰 */
+
+    /* 1. 🚫 仅去掉外层整体的边框线 */
+    border: none;
+
+    /* 2. 🚫 去掉外发光阴影 */
+    box-shadow: none;
+
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    /* 维持轻微磨砂效果让波形透过来 */
+    user-select: none;
+}
+
+.floating-threshold-box .threshold-label {
+    font-size: 12px;
+    color: #87c8ff;
+    font-weight: bold;
+}
+
+.floating-threshold-box .threshold-val {
+    font-size: 13px;
+    font-family: 'Consolas', monospace;
+    color: #00e5ff;
+    /* 亮青色显眼数值 */
+    min-width: 32px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* 针对悬浮框内部加减按钮的极致紧凑化定制 */
+.floating-threshold-box .joint-btn.mini-btn-spec {
+    width: 20px !important;
+    height: 20px !important;
+    line-height: 16px;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+    border-radius: 3px;
+}
+
+/* ==========================================
+   新增：悬浮速度调节弹窗样式
+   ========================================== */
+.speed-popup {
+    position: absolute;
+    /* 定位在左侧信息栏旁边 */
+    top: 150px;
+    left: 310px;
+    width: 340px;
+    background: rgba(5, 25, 45, 0.95);
+    border: 1px solid #00ccff;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 204, 255, 0.4);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* 弹出动画过渡 */
+    transition: opacity 0.2s cubic-bezier(0.2, 1, 0.3, 1), transform 0.2s cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+.speed-popup.hidden {
+    display: none !important;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+    /* 稍微向上缩放隐藏 */
+    pointer-events: none;
+}
+
+.speed-popup .popup-header {
+    background: linear-gradient(90deg, #0b4a7c, #1a3a5c);
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #00ccff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 204, 255, 0.3);
+}
+
+.speed-popup .popup-close-btn {
+    background: transparent;
+    border: none;
+    color: #87c8ff;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.speed-popup .popup-close-btn:hover {
+    color: #ff4d4d;
+}
+
+.speed-popup .popup-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 让弹窗里的分组块背景更深一点 */
+.speed-popup .speed-group-fill {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(135, 200, 255, 0.15);
+}
+
+/* ==========================================
+   新增：机械臂末端摄像头视频流容器样式
+   ========================================== */
+.camera-stream-container {
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(0, 204, 255, 0.15);
+}
+
+#armEndCameraStream {
+    background-color: #000000;
+    transition: opacity 0.3s ease;
+}
+
+/* ==========================================
+   新增：点云地图左上角悬浮管线圆盘指示器
+   ========================================== */
+.floating-compass {
+    position: absolute;
+    top: 15px;
+    /* 👈 就是这个参数控制上下位置 */
+    left: 15px;
+    /* 控制左右位置 */
+    width: 110px;
+    /* 强制缩小原圆盘尺寸 */
+    height: 110px;
+    z-index: 100;
+    pointer-events: none;
+    /* 让鼠标事件穿透，不影响你拖拽地图 */
+}
+
+.floating-compass .compass-container {
+    width: 100% !important;
+    height: 100% !important;
+    border-width: 2px;
+    /* 边框改细，适配小尺寸 */
+}
+
+/* 缩小圆盘内的箭头尺寸 */
+.floating-compass .side-arrow {
+    font-size: 1.5rem !important;
+}
+
+.floating-compass .cable-up-arrow {
+    font-size: 1.5rem !important;
+}
+
+/* ==========================================
+   统一且简洁的实景抓拍按钮样式 (一排四个)
+   ========================================== */
+.simple-capture-btn {
+    background: rgba(10, 60, 90, 0.6);
+    /* 统一低调的半透明暗蓝背景 */
+    border: 1px solid rgba(120, 200, 255, 0.4);
+    /* 细微的亮蓝色边框 */
+    color: #eaf6ff;
+    padding: 4px 0;
+    /* 压缩上下内边距，让按钮变扁 */
+    font-size: 11px;
+    /* 字体改小，适配一排四个的紧凑空间 */
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    text-align: center;
+    box-shadow: none;
+    /* 摒弃原先花哨的发光阴影 */
+    margin: 0;
+    white-space: nowrap;
+    /* 强制文字不换行 */
+}
+
+/* 鼠标悬浮时稍微亮起 */
+.simple-capture-btn:hover {
+    background: rgba(0, 150, 255, 0.5);
+    border-color: #ffffff;
+    box-shadow: 0 0 6px rgba(0, 150, 255, 0.5);
+    transform: scale(1.02);
+    /* 微微放大 */
+}
+
+/* 鼠标按下时的阻尼回弹 */
+.simple-capture-btn:active {
+    transform: scale(0.95);
+    background: rgba(0, 120, 200, 0.8);
+}
+
+/* ==========================================
+   布局重构：地图向下填充与右侧视频垂直排列
+   ========================================== */
+
+/* 1. 让中间地图区域向下填充空白 */
+.pf-map-wrapper {
+    flex: 1 !important;
+    /* 强制占满中间列的所有高度 */
+    border-bottom: none;
+    /* 去除可能遗留的底部边框 */
+}
+
+/* 2. 右侧视频流：上下排列样式 */
+.pf-video-vertical {
+    flex: 6 !important;
+    /* 👈 核心修改：占据 6 份高度 */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-bottom: 1px dashed #444;
+    background: #000;
+    box-sizing: border-box;
+    min-height: 0;
+}
+
+.pf-video-vertical .video-box {
+    flex: 1;
+    /* 上下视频各占 50% 高度 */
+    border-right: none !important;
+    /* 清除原有横向排列的右边框 */
+    border-bottom: 1px solid #444;
+    /* 添加上下视频的分隔线 */
+    width: 100%;
+}
+
+.pf-video-vertical .video-box:last-child {
+    border-bottom: none;
+}
+
+/* 3. 压缩图片显示区域 */
+/* pipeline-upper 原本设置了 flex: 1，所以会被上面挤压而自动变小 */
+/* 但我们需要降低图片的最小高度阈值，防止它宁愿溢出也不缩小 */
+.img-wrapper {
+    min-height: 80px !important;
+    /* 原为 140px，改小让其能被压缩 */
+}
+
+/* 摇杆区域的 .pipeline-lower 原本已经是 flex: 0 0 200px !important; 
+   由于设置了固定值且不可压缩，所以摇杆区域的大小会完美保持不变 */
+
+/* ==========================================
+   布局重构：转向控制摇杆完全分离样式
+   ========================================== */
+
+/* 1. 让上方的抓拍与视频容器自动充满除摇杆外的所有空间 */
+#pipelineDataArea {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    padding: 0 !important;
+    background-color: #1a1a1a;
+    width: 100%;
+
+    /* 🔒 核心修改：锁定 100% 撑满父级，不允许上下塌陷留白 */
+    height: 100% !important;
+    min-height: 0 !important;
+    /* 保持不变：允许内部组件在必要时收缩，防止溢出 */
+}
+
+/* 💡 同步追加：强行覆盖父级的居中拉伸表现，确保完全贴合 */
+.pf-side>#pipelineDataArea {
+    align-self: stretch;
+}
+
+/* 2. 新型独立转向控制区域样式 */
+#steeringControlArea {
+    flex: 0 0 110px !important;
+    /* 核心：强行固定下方摇杆区域的总高度，不参与任何压缩 */
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 10px !important;
+    background: rgba(4, 24, 44, 0.5);
+    /* 稍微变换一下半透明底色，增强模块间的分离感 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 3. 为新创建的转向标题行追加顶部细线，进一步强化视觉分界线 */
+.steering-header {
+    border-top: 1px solid rgba(100, 180, 255, 0.25) !important;
+    margin-top: 0;
+}
+
+/* ==========================================
+   新增：机械臂控制弹窗样式
+   ========================================== */
+.cyber-modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: transparent;
+    /* 将原本的黑色半透明背景改为完全透明 */
+    backdrop-filter: none;
+    /* 取消原本的 blur(8px) 毛玻璃模糊效果 */
+}
+
+.cyber-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    background: rgba(5, 30, 50, 0.9);
+    border: 1px solid rgba(100, 180, 255, 0.5);
+    box-shadow: 0 0 30px rgba(0, 204, 255, 0.4);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.cyber-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(135, 200, 255, 0.2);
+    background: linear-gradient(90deg, rgba(10, 60, 90, 0.9), transparent);
+}
+
+.cyber-modal-header h3 {
+    margin: 0;
+    color: #87c8ff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.close-modal-btn {
+    color: #888;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-modal-btn:hover {
+    color: #ff4d4d;
+}
+
+.arm-modal-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 20px;
+}
+
+.pipeline-key-modal-content {
+    width: 420px;
+    max-width: calc(100vw - 32px);
+}
+
+.pipeline-key-modal-body {
+    padding: 18px;
+}
+
+.pipeline-key-control-box {
+    margin: 0;
+    padding: 12px;
+    min-height: 220px;
+}
+
+.pipeline-key-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    flex: 1;
+}
+
+.pipeline-key-btn {
+    min-height: 72px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 200, 255, 0.5);
+    background: linear-gradient(145deg, #1a4a6d, #0d2a40);
+    color: #eaf6ff;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 0 8px rgba(0, 160, 233, 0.24), inset 0 2px 4px rgba(255, 255, 255, 0.12);
+    transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+    user-select: none;
+}
+
+.pipeline-key-btn strong {
+    font-size: 18px;
+    letter-spacing: 0;
+    font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.pipeline-key-btn span {
+    font-size: 13px;
+    color: #a8e0ff;
+}
+
+.pipeline-key-btn:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.55), inset 0 2px 5px rgba(255, 255, 255, 0.24);
+}
+
+.pipeline-key-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    background: #00ccff;
+    color: #00111f;
+}
+
+.pipeline-key-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
+.pipeline-key-btn.sending {
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.55);
+}
+
+.pipeline-key-status {
+    min-height: 22px;
+    margin-top: 12px;
+    color: #a8e0ff;
+    font-size: 13px;
+    text-align: center;
+}
+
+.pipeline-key-status.success {
+    color: #00ff66;
+}
+
+.pipeline-key-status.error {
+    color: #ff7b7b;
+}
+
+/* ==========================================
+   新增：实景抓拍弹窗样式
+   ========================================== */
+
+/* 核心：让弹窗的外层遮罩完全穿透，不阻挡底部界面的点击操作 */
+.non-blocking-overlay {
+    pointer-events: none !important;
+}
+
+/* 核心：弹窗本体需要恢复鼠标事件，否则弹窗右上角的关闭按钮点不了 */
+.pointer-auto {
+    pointer-events: auto !important;
+}
+
+/* 抓拍弹窗本体位置与大小 */
+.capture-modal-content {
+    /* 建议固定在屏幕中心偏上的位置，避免完全遮挡下方的按钮 */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 650px;
+    /* 根据你的图片比例调整 */
+    background: rgba(5, 30, 50, 0.95);
+    border: 1px solid rgba(100, 180, 255, 0.6);
+    box-shadow: 0 0 30px rgba(0, 204, 255, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    z-index: 10000;
+}
+
+/* 2x2 网格布局 */
+.capture-grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* 强制两列 */
+    grid-template-rows: 1fr 1fr;
+    /* 强制两行 */
+    gap: 15px;
+    /* 图片之间的间隙 */
+    margin-top: 15px;
+}
+
+/* 图片容器及图片自适应 */
+.capture-img-box {
+    position: relative;
+    border: 1px solid rgba(100, 180, 255, 0.3);
+    border-radius: 4px;
+    background: #000;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 4 / 3;
+    /* 维持图片宽高比，防止变形 */
+}
+
+.capture-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* 保证图片完整显示不被裁切 */
+}
+
+/* 图片左上角的文本小标签 */
+.img-label {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #00ccff;
+    padding: 2px 6px;
+    font-size: 12px;
+    border-radius: 3px;
+    z-index: 2;
+}
+
+/* 间距辅助 */
+.mt-2 {
+    margin-top: 15px !important;
+}
+
+/* ==========================================
+   🌟 新增：三维视图网格显隐按钮 (Cyber 风格)
+   ========================================== */
+.cyber-floating-btn {
+    position: absolute;
+    top: 10px;
+    /* 悬浮在右上角 */
+    right: 15px;
+    width: 34px;
+    /* 小巧精致 */
+    height: 34px;
+    background: rgba(5, 30, 50, 0.85);
+    border: 1px solid rgba(100, 180, 255, 0.6);
+    box-shadow: 0 0 10px rgba(0, 204, 255, 0.2);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    /* 确保覆盖在画布上方 */
+    transition: all 0.3s ease;
+}
+
+/* 鼠标悬停的高亮效果 */
+.cyber-floating-btn:hover {
+    box-shadow: 0 0 15px rgba(0, 204, 255, 0.6);
+    background: rgba(10, 50, 80, 0.95);
+    border-color: #00ccff;
+    transform: scale(1.08);
+    /* 微微放大 */
+}
+
+/* 标志图标 */
+.cyber-floating-btn .btn-icon {
+    font-size: 18px;
+    transition: all 0.3s;
+}
+
+/* 悬浮提示框 (初始隐藏) */
+.cyber-floating-btn .btn-tooltip {
+    position: absolute;
+    right: 42px;
+    /* 紧贴在按钮的左侧 */
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(5, 30, 50, 0.95);
+    border: 1px solid rgba(100, 180, 255, 0.6);
+    color: #eaf6ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    /* 防止遮挡鼠标事件 */
+    opacity: 0;
+    /* 默认透明 */
+    transition: opacity 0.3s ease;
+}
+
+/* 鼠标放上去才显示提示文字 */
+.cyber-floating-btn:hover .btn-tooltip {
+    opacity: 1;
+}
+
+/* 点击关闭网格后的【灰暗状态】 */
+.cyber-floating-btn.off-state {
+    border-color: rgba(150, 150, 150, 0.4);
+    box-shadow: none;
+    background: rgba(20, 20, 20, 0.6);
+}
+
+.cyber-floating-btn.off-state .btn-icon {
+    opacity: 0.5;
+    filter: grayscale(100%);
+    /* 让 emoji 变成灰色 */
+}
+
+/* ================================
+   巡检结果保存悬浮按钮
+   ================================ */
+.inspection-save-fab {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    z-index: 1200;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #ffd700;
+    background: linear-gradient(180deg, rgba(255, 204, 0, 0.95), rgba(160, 105, 0, 0.95));
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.65);
+}
+
+.inspection-save-fab:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* ================================
+   巡检结果主内容区表格
+   ================================ */
+.inspect-result-panel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.inspect-result-panel.hidden {
+    display: none !important;
+}
+
+.inspect-result-toolbar {
+    flex: 0 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    box-sizing: border-box;
+    border: 1px solid rgba(86, 169, 230, 0.45);
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(15, 74, 118, 0.92), rgba(7, 35, 62, 0.82));
+}
+
+.inspect-result-heading {
+    color: #48d7ff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.inspect-refresh-btn {
+    height: 28px;
+    padding: 0 14px;
+    border: 1px solid rgba(120, 200, 255, 0.72);
+    border-radius: 4px;
+    background: rgba(8, 54, 88, 0.84);
+    color: #eaf6ff;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.inspect-refresh-btn:hover {
+    border-color: #48d7ff;
+    background: rgba(18, 94, 142, 0.95);
+    box-shadow: 0 0 8px rgba(72, 215, 255, 0.35);
+}
+
+.inspect-result-table-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid rgba(86, 169, 230, 0.36);
+    border-radius: 6px;
+    background: rgba(4, 14, 30, 0.72);
+}
+
+.inspect-result-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    color: #eaf6ff;
+    font-size: 14px;
+}
+
+.inspect-result-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    height: 44px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    border-right: 1px solid rgba(86, 169, 230, 0.38);
+    border-bottom: 1px solid rgba(86, 169, 230, 0.5);
+    background: rgba(22, 75, 118, 0.98);
+    color: #48d7ff;
+    font-weight: bold;
+    text-align: left;
+}
+
+.inspect-result-table th:nth-child(1) {
+    width: 48%;
+}
+
+.inspect-result-table th:nth-child(2) {
+    width: 28%;
+}
+
+.inspect-result-table th:nth-child(3),
+.inspect-result-table th:nth-child(4) {
+    width: 12%;
+    text-align: center;
+}
+
+.inspect-result-table td {
+    height: 64px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    border-right: 1px solid rgba(86, 169, 230, 0.28);
+    border-bottom: 1px solid rgba(86, 169, 230, 0.28);
+    background: rgba(11, 25, 45, 0.86);
+    color: #b7e8ff;
+    vertical-align: middle;
+}
+
+.inspect-result-table td:nth-child(3),
+.inspect-result-table td:nth-child(4) {
+    text-align: center;
+    color: #48d7ff;
+    font-weight: bold;
+}
+
+.inspect-result-row {
+    cursor: pointer;
+    outline: none;
+}
+
+.inspect-result-row:nth-child(even) td {
+    background: rgba(14, 39, 70, 0.9);
+}
+
+.inspect-result-row:hover td,
+.inspect-result-row:focus td {
+    background: rgba(16, 75, 112, 0.95);
+    color: #ffffff;
+}
+
+.inspect-result-name {
+    color: #48d7ff !important;
+    font-weight: bold;
+}
+
+.inspect-result-empty {
+    height: 120px !important;
+    text-align: center !important;
+    color: rgba(234, 246, 255, 0.58) !important;
+    font-size: 14px;
+}
+
+.inspect-result-empty.error {
+    color: #ff8080 !important;
+}
+
+@media screen and (max-width: 1000px) {
+    .inspect-result-table {
+        min-width: 760px;
+    }
+}
+
+/* ==========================================
+   ✅ 三维重建页：加载当前点云地图按钮
+   ========================================== */
+
+/* 让履带车控制面板在新容器内正常排列，不再自己 absolute 定位 */
+.crawler-control-stack .floating-joystick {
+    position: static;
+    width: 130px;
+    align-self: center;
+}
+
+/* 三维重建页右侧：履带车按钮 + 控制面板外层容器 */
+.crawler-control-stack {
+    position: absolute;
+    right: 22px;
+    bottom: 22px;
+    width: 150px;
+    /* 原来 176px，缩小 */
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    /* 原来 10px，缩小间距 */
+}
+
+/* 让履带车控制面板在外层容器内排列 */
+.crawler-control-stack .floating-joystick {
+    position: static;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 加载当前点云地图、发送破损点坐标统一按钮样式 */
+.crawler-action-btn {
+    width: 100%;
+    min-height: 34px;
+    /* 原来 48px，缩小 */
+    margin: 0;
+    padding: 5px 8px;
+    /* 原来 8px 10px，缩小 */
+    box-sizing: border-box;
+
+    background: linear-gradient(180deg, #e6a23c, #d35400) !important;
+    border: 1px solid #d35400 !important;
+    border-radius: 4px;
+
+    color: #ffffff !important;
+    font-size: 12px;
+    /* 原来 13px，缩小 */
+    font-weight: bold;
+    line-height: 1.25;
+    text-align: center;
+    cursor: pointer;
+
+    box-shadow: 0 0 6px rgba(230, 126, 0, 0.4);
+    transition: all 0.2s ease;
+}
+
+/* 发送破损点/指定扫描区域按钮与摇杆标题之间的距离 */
+#btnSendFaultToCar,
+#btnManualScanArea {
+    margin-bottom: 6px;
+}
+
+#btnManualScanArea.manual-scan-btn {
+    background: linear-gradient(180deg, #00a8ff, #0067b1) !important;
+    border-color: #00a8ff !important;
+    box-shadow: 0 0 6px rgba(0, 168, 255, 0.45);
+}
+
+#btnManualScanArea.manual-scan-btn.picking {
+    background: linear-gradient(180deg, #18a058, #0c6b3b) !important;
+    border-color: #18a058 !important;
+    box-shadow: 0 0 12px rgba(24, 160, 88, 0.75);
+}
+
+.gpr-manual-scan-tip {
+    position: absolute;
+    left: 50%;
+    top: 14px;
+    transform: translateX(-50%);
+    z-index: 180;
+    min-width: 300px;
+    max-width: calc(100% - 40px);
+    padding: 8px 12px;
+    border: 1px solid rgba(0, 229, 255, 0.75);
+    border-radius: 6px;
+    background: rgba(2, 20, 42, 0.92);
+    color: #eaf6ff;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+    box-shadow: 0 0 14px rgba(0, 180, 255, 0.45);
+    pointer-events: none;
+}
+
+.gpr-manual-scan-tip .hotkey {
+    color: #ffd166;
+    font-weight: bold;
+}
+
+/* 悬停效果 */
+.crawler-action-btn:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 0 12px rgba(255, 150, 30, 0.75);
+}
+
+/* 点击效果 */
+.crawler-action-btn:active {
+    transform: translateY(1px);
+    filter: brightness(0.95);
+}
+
+/* 加载中状态 */
+.crawler-action-btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+/* 加载成功后仍保持同类按钮风格，只轻微改为绿色提示 */
+.crawler-action-btn.loaded {
+    background: linear-gradient(180deg, #18a058, #0c6b3b) !important;
+    border-color: #18a058 !important;
+    box-shadow: 0 0 10px rgba(24, 160, 88, 0.65);
+}
+
+/* ==========================================
+   履带小车扫描范围参数弹窗
+   ========================================== */
+.scan-param-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 8, 18, 0.58);
+    backdrop-filter: blur(2px);
+}
+
+.scan-param-content {
+    width: 430px;
+    max-width: calc(100vw - 32px);
+    background: rgba(4, 26, 50, 0.96);
+    border: 1px solid rgba(0, 229, 255, 0.72);
+    border-radius: 8px;
+    box-shadow: 0 0 24px rgba(0, 180, 255, 0.45), inset 0 0 18px rgba(0, 120, 255, 0.18);
+}
+
+.scan-param-body {
+    padding: 16px 18px 18px;
+}
+
+.scan-param-desc {
+    margin-bottom: 14px;
+    color: #a8e0ff;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.scan-param-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 10px 0;
+    color: #eaf6ff;
+    font-size: 14px;
+}
+
+.scan-param-row input {
+    width: 120px;
+    height: 30px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    color: #eaf6ff;
+    background: rgba(0, 12, 26, 0.88);
+    border: 1px solid rgba(120, 200, 255, 0.62);
+    border-radius: 4px;
+    outline: none;
+}
+
+.scan-param-row input:focus {
+    border-color: #00e5ff;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.45);
+}
+
+.fault-wait-param-content {
+    width: 390px;
+}
+
+.fault-wait-current {
+    margin-top: 8px;
+    color: #a8e0ff;
+    font-size: 13px;
+}
+
+.fault-wait-current span {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.scan-param-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.scan-param-btn {
+    min-width: 96px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.scan-param-btn.secondary {
+    color: #bfeaff;
+    background: rgba(4, 38, 70, 0.85);
+    border: 1px solid rgba(120, 200, 255, 0.55);
+}
+
+.scan-param-btn.primary {
+    color: #ffffff;
+    background: linear-gradient(180deg, #e6a23c, #d35400);
+    border: 1px solid #e6a23c;
+    box-shadow: 0 0 10px rgba(230, 162, 60, 0.42);
+}
+
+.scan-param-btn:hover {
+    filter: brightness(1.08);
+}
+/* ==========================================
+   ✅ 偏移后二维剖面：手动红圈标注按钮与交互状态
+   ========================================== */
+.gpr-view-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 4px 0;
+}
+
+.gpr-view-header h3 {
+    margin: 0;
+    flex: 1;
+}
+
+.manual-anno-btn {
+    padding: 2px 8px;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
+    background: rgba(80, 30, 30, 0.65);
+    border-color: rgba(255, 90, 90, 0.75);
+    color: #ffd6d6;
+}
+
+.manual-anno-btn:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 8px rgba(255, 70, 70, 0.45);
+}
+
+.manual-anno-btn.active {
+    background: linear-gradient(180deg, rgba(255, 80, 80, 0.95), rgba(150, 20, 20, 0.95));
+    color: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 70, 70, 0.85);
+}
+
+.gpr-view.manual-annotation-active {
+    border-color: rgba(255, 70, 70, 0.9);
+    box-shadow: 0 0 12px rgba(255, 50, 50, 0.35);
+}
+
+.gpr-view.manual-annotation-active canvas {
+    cursor: crosshair;
+}
+
+
+/* ==========================================
+   ✅ 偏移后二维剖面：倾斜管道彩色强制连接标注
+   ========================================== */
+.manual-pipe-btn {
+    padding: 2px 8px;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
+    background: rgba(20, 45, 85, 0.72);
+    border-color: rgba(0, 180, 255, 0.8);
+    color: #d8f2ff;
+}
+
+.manual-pipe-btn:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 8px rgba(0, 180, 255, 0.55);
+}
+
+.manual-pipe-btn.active {
+    background: linear-gradient(180deg, rgba(0, 170, 255, 0.98), rgba(0, 70, 160, 0.98));
+    color: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0 0 12px rgba(0, 180, 255, 0.9);
+}
+
+.gpr-view.forced-pipe-annotation-active {
+    border-color: rgba(0, 190, 255, 0.95);
+    box-shadow: 0 0 12px rgba(0, 180, 255, 0.38);
+}
+
+.gpr-view.forced-pipe-annotation-active canvas {
+    cursor: crosshair;
+}
+
+/* ==========================================
+   ✅ GPR 标注校准持久化：清除校准按钮
+   ========================================== */
+.calibration-clear-btn {
+    padding: 2px 8px;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
+    background: rgba(70, 60, 20, 0.72);
+    border-color: rgba(255, 205, 60, 0.8);
+    color: #fff2c2;
+}
+
+.calibration-clear-btn:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 8px rgba(255, 205, 60, 0.55);
+}
+
+/* ==========================================
+   ✅ 偏移后二维剖面：标注圆圈拖动交互
+   ========================================== */
+#mig2dCanvas {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.gpr-view.manual-annotation-active canvas,
+.gpr-view.forced-pipe-annotation-active canvas {
+    cursor: crosshair;
+}
+
+
+/* ==========================================
+   ✅ 三维重建页地下管道点击信息弹窗
+   ========================================== */
+.gpr-pipe-info-popup {
+    position: absolute;
+    min-width: 245px;
+    max-width: 330px;
+    padding: 12px 14px 12px 14px;
+    border: 1px solid rgba(255, 214, 80, 0.95);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(5, 26, 48, 0.96), rgba(2, 14, 30, 0.94));
+    color: #eaf6ff;
+    font-size: 13px;
+    z-index: 220;
+    box-shadow:
+        0 0 18px rgba(255, 214, 80, 0.35),
+        0 10px 24px rgba(0, 0, 0, 0.55);
+    transform: translate(-50%, -115%);
+    pointer-events: auto;
+    transition: opacity 0.12s ease, left 0.05s linear, top 0.05s linear;
+}
+
+.gpr-pipe-info-popup::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 12px;
+    height: 12px;
+    transform: translateX(-50%) rotate(45deg);
+    background: rgba(2, 14, 30, 0.94);
+    border-right: 1px solid rgba(255, 214, 80, 0.95);
+    border-bottom: 1px solid rgba(255, 214, 80, 0.95);
+}
+
+.gpr-pipe-popup-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    padding-right: 24px;
+    border-bottom: 1px dashed rgba(255, 214, 80, 0.45);
+}
+
+.gpr-pipe-popup-title {
+    flex: 1;
+    min-width: 0;
+    font-weight: bold;
+    color: #ffd650;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gpr-pipe-popup-item {
+    margin: 5px 0;
+    line-height: 1.55;
+}
+
+.gpr-pipe-popup-item strong {
+    color: #9bdcff;
+    font-weight: 700;
+}
+
+.gpr-pipe-popup-close {
+    position: absolute;
+    top: 5px;
+    right: 9px;
+    color: rgba(234, 246, 255, 0.75);
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.gpr-pipe-popup-close:hover {
+    color: #ffffff;
+    text-shadow: 0 0 8px #ffd650;
+}
+
+
+/* ==========================================
+   ✅ 三维重建页：地下管道材质颜色指定
+   ========================================== */
+.gpr-pipe-color-section {
+    margin-top: 6px;
+    padding-top: 0;
+    border-top: none;
+}
+
+.pipe-material-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.pipe-color-swatch {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
+    vertical-align: middle;
+}
+
+.gpr-pipe-color-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.pipe-color-btn {
+    min-height: 25px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    border: 1px solid rgba(120, 200, 255, 0.48);
+    background: rgba(5, 30, 55, 0.78);
+    color: #eaf6ff;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.16s ease;
+}
+
+.pipe-color-btn:hover {
+    filter: brightness(1.15);
+    border-color: #ffffff;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.35);
+}
+
+.pipe-color-btn.active {
+    color: #ffffff;
+    border-color: #ffffff;
+    background: rgba(0, 145, 255, 0.72);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+}
+
+.pipe-color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.pipe-color-cable .pipe-color-dot {
+    background: #050505;
+}
+
+.pipe-color-pvc .pipe-color-dot {
+    background: #ffffff;
+}
+
+.pipe-color-steel .pipe-color-dot {
+    background: #c0c0c0;
+}
+
+.pipe-color-reset {
+    color: #ffe6a3;
+    border-color: rgba(255, 214, 80, 0.45);
+}
+
+/* ==========================================
+   ✅ 三维重建页：管道材质指定区域折叠显示
+   ========================================== */
+.pipe-color-toggle-btn {
+    flex-shrink: 0;
+    margin-left: 0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 214, 80, 0.55);
+    background: rgba(6, 35, 60, 0.86);
+    color: #ffd650;
+    font-size: 12px;
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.pipe-color-toggle-btn:hover {
+    border-color: #ffffff;
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 214, 80, 0.35);
+}
+
+.gpr-pipe-color-actions.collapsed {
+    display: none;
+}
+
+.pipe-color-metal .pipe-color-dot,
+.pipe-color-steel .pipe-color-dot {
+    background: #c0c0c0;
+}
+
+
+/* ✅ 弹窗标题右侧材质下拉按钮：仅显示箭头，不显示“指定材质”文字 */
+.pipe-color-toggle-btn {
+    min-width: 34px;
+    height: 26px;
+    padding: 2px 8px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+/* ✅ 当前已指定的材质按钮高亮显示 */
+.pipe-color-btn.active {
+    color: #ffffff;
+    border-color: #00e5ff;
+    background: linear-gradient(180deg, rgba(0, 165, 255, 0.92), rgba(0, 90, 170, 0.86));
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.75), inset 0 0 8px rgba(255, 255, 255, 0.16);
+}
+
+.pipe-color-btn.active::after {
+    content: "✓";
+    margin-left: 3px;
+    color: #ffffff;
+    font-weight: 900;
+}
+
+.pipe-color-reset.active {
+    color: #ffe6a3;
+    border-color: rgba(255, 214, 80, 0.85);
+    background: rgba(110, 80, 0, 0.45);
+    box-shadow: 0 0 10px rgba(255, 214, 80, 0.45);
+}
+
+
+/* ==========================================
+   ✅ 三维重建页：履带小车扫描区域微调面板
+   ========================================== */
+.gpr-scan-adjust-panel {
+    position: absolute;
+    top: 42px;
+    right: 14px;
+    width: 315px;
+    z-index: 80;
+    display: none;
+    padding: 10px;
+    box-sizing: border-box;
+    background: rgba(3, 22, 42, 0.94);
+    border: 1px solid rgba(0, 229, 255, 0.75);
+    border-radius: 8px;
+    box-shadow: 0 0 18px rgba(0, 229, 255, 0.28), inset 0 0 12px rgba(0, 120, 255, 0.18);
+    color: #eaf6ff;
+    font-size: 12px;
+    pointer-events: auto;
+}
+
+.scan-adjust-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(120, 200, 255, 0.25);
+}
+
+.scan-adjust-close {
+    width: 24px;
+    height: 24px;
+    line-height: 22px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 120, 120, 0.8);
+    background: rgba(120, 20, 20, 0.8);
+    color: #fff;
+    cursor: pointer;
+}
+
+.scan-adjust-desc {
+    margin: 8px 0;
+    color: #a8e0ff;
+    line-height: 1.45;
+}
+
+.scan-adjust-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    margin-bottom: 8px;
+    padding: 7px;
+    border: 1px solid rgba(120, 200, 255, 0.22);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.22);
+    font-family: Consolas, Monaco, monospace;
+}
+
+.scan-adjust-metrics b {
+    color: #00ffcc;
+    font-weight: bold;
+}
+
+.scan-adjust-section {
+    margin-top: 7px;
+}
+
+.scan-adjust-label {
+    margin-bottom: 4px;
+    color: #87c8ff;
+    font-weight: bold;
+}
+
+.scan-adjust-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+}
+
+.scan-adjust-buttons button,
+.scan-adjust-footer button {
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid rgba(120, 200, 255, 0.6);
+    background: linear-gradient(180deg, rgba(12, 72, 115, 0.92), rgba(5, 35, 70, 0.92));
+    color: #eaf6ff;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.scan-adjust-buttons button:hover,
+.scan-adjust-footer button:hover {
+    filter: brightness(1.15);
+    border-color: #00e5ff;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.35);
+}
+
+.scan-adjust-footer {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr 1fr;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(120, 200, 255, 0.22);
+}
+
+.scan-adjust-primary {
+    background: linear-gradient(180deg, rgba(0, 170, 120, 0.96), rgba(0, 90, 65, 0.96)) !important;
+    border-color: rgba(0, 255, 190, 0.8) !important;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+.scan-adjust-secondary {
+    background: linear-gradient(180deg, rgba(74, 78, 94, 0.9), rgba(32, 38, 54, 0.92)) !important;
+}
+
+/* 让扫描区域微调面板以三维画布容器为定位基准 */
+.gpr-view-3d #threeContainer {
+    position: relative;
+}
+
+/* ==========================================
+   ✅ 修复：扫描区域微调面板避开右下角履带车控制区
+   说明：右下角 .crawler-control-stack 宽约 150px，right=22px；
+   微调面板右侧预留 190px，避免被“发送破损点坐标 / 履带车控制”遮挡。
+   ========================================== */
+.gpr-scan-adjust-panel {
+    top: 72px !important;
+    right: 190px !important;
+    width: 330px !important;
+    z-index: 260 !important;
+    max-height: calc(100% - 96px);
+    overflow-y: auto;
+}
+
+/* 控制区仍然可操作，但层级低于微调面板；两者已错位，正常不会互相覆盖。 */
+.crawler-control-stack {
+    z-index: 120;
+}
+
+/* 小屏兜底：当三维视图宽度不足时，微调面板改贴左侧，仍避开右下角控制区。 */
+@media screen and (max-width: 1100px) {
+    .gpr-scan-adjust-panel {
+        left: 14px !important;
+        right: auto !important;
+        top: 56px !important;
+        width: min(330px, calc(100% - 210px)) !important;
+        min-width: 280px;
+        max-height: calc(100% - 80px);
+    }
+}
+
+@media screen and (max-width: 760px) {
+    .gpr-scan-adjust-panel {
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+        min-width: 0;
+        top: 56px !important;
+        max-height: calc(100% - 260px);
+    }
+}
+
+/* ==========================================
+   ✅ 调整：扫描区域微调面板固定到三维视图左上角，并支持新增平移按钮
+   ========================================== */
+.gpr-scan-adjust-panel {
+    top: 14px !important;
+    left: 14px !important;
+    right: auto !important;
+    width: 348px !important;
+    z-index: 300 !important;
+    max-height: calc(100% - 28px) !important;
+    overflow-y: auto !important;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-buttons button {
+    min-width: 0;
+    padding-left: 4px;
+    padding-right: 4px;
+    white-space: nowrap;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media screen and (max-width: 760px) {
+    .gpr-scan-adjust-panel {
+        left: 10px !important;
+        right: 10px !important;
+        top: 10px !important;
+        width: auto !important;
+        max-height: calc(100% - 20px) !important;
+    }
+}
+
+
+/* ==========================================
+   ✅ 简化：扫描区域微调面板只保留最小调整步长
+   ========================================== */
+.gpr-scan-adjust-panel {
+    width: 318px !important;
+    padding: 9px !important;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-desc {
+    margin: 6px 0 !important;
+    line-height: 1.35 !important;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-metrics.compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+    padding: 6px !important;
+    margin-bottom: 6px !important;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-metrics.compact span:nth-child(4) {
+    grid-column: 1 / -1;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-section {
+    margin-top: 5px !important;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-label {
+    margin-bottom: 3px !important;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-buttons,
+.gpr-scan-adjust-panel .scan-adjust-buttons.compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-buttons button {
+    height: 28px !important;
+    font-size: 12px !important;
+}
+
+.gpr-scan-adjust-panel .scan-adjust-footer {
+    margin-top: 8px !important;
+    padding-top: 7px !important;
+}
+
+/* English labels need room for complete words at desktop and laptop sizes. */
+body, .home-page {
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+button, input, select {
+    font-family: inherit;
+}
+button {
+    box-sizing: border-box;
+}
+.header-side, .cyber-nav, .nav-item, .nav-content {
+    min-width: 0;
+}
+.header-center {
+    width: clamp(300px, 29vw, 480px);
+}
+.center-title-text {
+    font-size: clamp(19px, 1.65vw, 28px);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.nav-item {
+    padding: 0 clamp(6px, 0.8vw, 14px);
+}
+.nav-content {
+    font-size: clamp(11px, 0.88vw, 15px);
+    letter-spacing: 0;
+    gap: 5px;
+}
+.bottom-mode-group .tech-mode-btn {
+    font-size: 14px;
+    letter-spacing: 0;
+    gap: 5px;
+    padding: 4px 8px;
+}
+.bottom-mode-group .btn-icon {
+    flex: 0 0 auto;
+    margin-right: 0;
+    font-size: 16px;
+}
+.bottom-mode-group .btn-icon:empty {
+    display: none;
+}
+.emergency-btn {
+    letter-spacing: 0;
+}
+.map-nav-overlay {
+    align-items: flex-end;
+}
+.nav-overlay-btn {
+    width: 112px;
+    min-height: 34px;
+    white-space: nowrap;
+}
+.pf-header {
+    height: auto;
+    min-height: 32px;
+    flex-shrink: 0;
+    line-height: 1.25;
+    padding: 7px 9px;
+    box-sizing: border-box;
+}
+.pf-header-flex {
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.header-btn-group {
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.header-btn-mini {
+    white-space: nowrap;
+}
+#signalStatus {
+    top: 40px;
+}
+#armControlModal .cyber-modal-content {
+    width: 820px;
+    max-width: calc(100vw - 32px);
+}
+.arm-quick-actions {
+    flex: 0 0 108px;
+    box-sizing: border-box;
+}
+.arm-quick-actions .full-w {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    padding: 4px;
+    font-size: 12px;
+    line-height: 1.2;
+}
+.light-control-btn {
+    min-width: 70px;
+}
+.info-item {
+    gap: 6px;
+}
+.info-label {
+    min-width: 0;
+}
+.info-value, .status-badge {
+    flex-shrink: 0;
+}
+@media screen and (max-width: 1400px) {
+    .bottom-mode-group .tech-mode-btn {
+        font-size: 12px;
+    }
+    .nav-left-wing, .nav-right-wing {
+        padding: 0 5px;
+    }
+    .left-side { padding-left: 8px; }
+    .right-side { padding-right: 8px; }
+}
+
+/* Show all robot information without a sidebar scrollbar. */
+.left-panel .panel-info {
+    flex: 0 0 auto;
+    height: auto;
+}
+.panel-info #infoArea {
+    flex: 0 0 auto;
+    overflow: visible;
+}
+.panel-info .info-list {
+    gap: 0;
+    padding: 0;
+}
+.panel-info .info-item {
+    box-sizing: border-box;
+    min-height: clamp(36px, 4.8vh, 44px);
+    padding: 5px 0;
+    line-height: 1.3;
+}
+.left-panel .panel-op {
+    flex: 1 1 0;
+}
+#operationArea .side-control-pad {
+    box-sizing: border-box;
+    padding-top: 0;
+}
+#dogTransBase {
+    flex-shrink: 0;
+}
+@media screen and (max-height: 800px), screen and (max-width: 1400px) {
+    .panel-info .info-item {
+        min-height: 32px;
+        padding: 4px 0;
+        font-size: 13px;
+    }
+}
+
+/* Keep both quadruped posture labels inside the existing button. */
+.bottom-mode-group #btnDogStand {
+    white-space: normal;
+    line-height: 1.15;
+}
